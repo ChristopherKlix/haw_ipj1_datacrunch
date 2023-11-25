@@ -18,6 +18,9 @@ jobs:
         with:
           ref: 'public'
 
+      - name: Fetch test-branch
+        run: git fetch origin test-branch
+
       - name: Update log file
         run: |
           current_time=$(date +"%T")
