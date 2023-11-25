@@ -1,7 +1,5 @@
+import os
 import openai
-
-
-api_key = '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'
 
 
 def main():
@@ -31,6 +29,8 @@ def main():
 
 
 def ask(prompt: str = '', history: list = []):
+    # Get API key from environment variable
+    api_key = os.environ['OPENAI_API_KEY']
     openai.api_key = api_key
 
     print('Talking to GPT...')
