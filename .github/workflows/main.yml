@@ -24,7 +24,7 @@ jobs:
       - name: Move public directory contents to top-level
         run: |
           # Move contents of the public directory to the root
-          git mv public/* .
+          mv public/* .
 
           git rm -rf ./public
 
