@@ -28,7 +28,7 @@ const initNavbar = () => {
 
     const navbarStyleTag = doc.createElement('style');
 
-    fetch('/app/static/navbar.css')
+    fetch('./static/navbar.css')
         .then((response) => response.text())
         .then((data) => {
             navbarStyleTag.id = 'navbar-style';
