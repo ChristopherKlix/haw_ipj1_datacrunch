@@ -131,7 +131,65 @@ def main():
 
     for i in range(0, 12):
         print(f'PV Production:    {pv_per_month_2020[i] / 1_000_000_000_000:6.2f} TWh    {pv_per_month_2021[i] / 1_000_000_000_000:6.2f} TWh    {pv_per_month_2022[i] / 1_000_000_000_000:6.2f} TWh', end='')
-        print(f'    Installed PV:    {installed_pv_per_month_2020[i] / 1_000_000_000:6.2f} GW    {installed_pv_per_month_2021[i] / 1_000_000_000:6.2f} GW    {installed_pv_per_month_2022[i] / 1_000_000_000:6.2f} GW')
+        print(f' │ Installed PV:    {installed_pv_per_month_2020[i] / 1_000_000_000:6.2f} GW    {installed_pv_per_month_2021[i] / 1_000_000_000:6.2f} GW    {installed_pv_per_month_2022[i] / 1_000_000_000:6.2f} GW')
+
+    # Compute commulative energy production of PV per month in 2020
+    wind_offshore_per_month_2020 = np.empty(12, dtype=int)
+    wind_offshore_per_month_2021 = np.empty(12, dtype=int)
+    wind_offshore_per_month_2022 = np.empty(12, dtype=int)
+
+    installed_wind_offshore_per_month_2020 = np.empty(12, dtype=int)
+    installed_wind_offshore_per_month_2021 = np.empty(12, dtype=int)
+    installed_wind_offshore_per_month_2022 = np.empty(12, dtype=int)
+
+    print(f'#' * 100)
+    print(f'# Wind Offshore production and installed Wind Offshore per month')
+    print(f'~' * 100)
+    print(f'                   2020        2021        2022                           2020        2021        2022')
+
+    for month in range(0, 12):
+        for day in range(0, 31):
+            for hour in range(0, 24):
+                for quarter in range(0, 4):
+                    wind_offshore_per_month_2020[month] += structured_data[0, month, day, hour, quarter].wind_offshore
+                    wind_offshore_per_month_2021[month] += structured_data[1, month, day, hour, quarter].wind_offshore
+                    wind_offshore_per_month_2022[month] += structured_data[2, month, day, hour, quarter].wind_offshore
+                    installed_wind_offshore_per_month_2020[month] = structured_data[0, month, 0, 0, 0].installed_wind_offshore
+                    installed_wind_offshore_per_month_2021[month] = structured_data[1, month, 0, 0, 0].installed_wind_offshore
+                    installed_wind_offshore_per_month_2022[month] = structured_data[2, month, 0, 0, 0].installed_wind_offshore
+
+    for i in range(0, 12):
+        print(f'Wind Offshore Production:    {wind_offshore_per_month_2020[i] / 1_000_000_000_000:6.2f} TWh    {wind_offshore_per_month_2021[i] / 1_000_000_000_000:6.2f} TWh    {wind_offshore_per_month_2022[i] / 1_000_000_000_000:6.2f} TWh', end='')
+        print(f' │ Installed Wind Offshore:    {installed_wind_offshore_per_month_2020[i] / 1_000_000_000:6.2f} GW    {installed_wind_offshore_per_month_2021[i] / 1_000_000_000:6.2f} GW    {installed_wind_offshore_per_month_2022[i] / 1_000_000_000:6.2f} GW')
+
+    wind_onshore_per_month_2020 = np.empty(12, dtype=int)
+    wind_onshore_per_month_2021 = np.empty(12, dtype=int)
+    wind_onshore_per_month_2022 = np.empty(12, dtype=int)
+
+    installed_wind_onshore_per_month_2020 = np.empty(12, dtype=int)
+    installed_wind_onshore_per_month_2021 = np.empty(12, dtype=int)
+    installed_wind_onshore_per_month_2022 = np.empty(12, dtype=int)
+
+    print(f'#' * 100)
+    print(f'# Wind Onshore production and installed Wind Onshore per month')
+    print(f'~' * 100)
+    print(f'                   2020        2021        2022                           2020        2021        2022')
+
+    for month in range(0, 12):
+        for day in range(0, 31):
+            for hour in range(0, 24):
+                for quarter in range(0, 4):
+                    wind_onshore_per_month_2020[month] += structured_data[0, month, day, hour, quarter].wind_onshore
+                    wind_onshore_per_month_2021[month] += structured_data[1, month, day, hour, quarter].wind_onshore
+                    wind_onshore_per_month_2022[month] += structured_data[2, month, day, hour, quarter].wind_onshore
+                    installed_wind_onshore_per_month_2020[month] = structured_data[0, month, 0, 0, 0].installed_wind_onshore
+                    installed_wind_onshore_per_month_2021[month] = structured_data[1, month, 0, 0, 0].installed_wind_onshore
+                    installed_wind_onshore_per_month_2022[month] = structured_data[2, month, 0, 0, 0].installed_wind_onshore
+
+    for i in range(0, 12):
+        print(f'Wind Onshore Production:    {wind_onshore_per_month_2020[i] / 1_000_000_000_000:6.2f} TWh    {wind_onshore_per_month_2021[i] / 1_000_000_000_000:6.2f} TWh    {wind_onshore_per_month_2022[i] / 1_000_000_000_000:6.2f} TWh', end='')
+        print(f' │ Installed Wind Onshore:    {installed_wind_onshore_per_month_2020[i] / 1_000_000_000:6.2f} GW    {installed_wind_onshore_per_month_2021[i] / 1_000_000_000:6.2f} GW    {installed_wind_onshore_per_month_2022[i] / 1_000_000_000:6.2f} GW')
+
 
     # Compute total energy balance of 2020, 2021, and 2022
 
@@ -180,6 +238,36 @@ def main():
 
         # Reset ASCII color
         print('\033[0m', end='')
+
+    # Comnpute maximum PV production per hour relative to installed capacity
+    print('#' * 40)
+    print(f'Maximum PV production per hour relative to installed capacity')
+    print('~' * 40)
+
+    max_percentage = 0.0
+    max_timestamp = (None, None)
+
+    for year in range(0, 3):
+        for month in range(0, 12):
+            for day in range(0, 31):
+                for hour in range(0, 24):
+                    for quarter in range(0, 4):
+                        pv_production = structured_data[year, month, day, hour, quarter].pv
+                        interpolated_pv_production = pv_production * 4
+                        installed_pv = structured_data[year, month, 0, 0, 0].installed_pv
+                        percentage = interpolated_pv_production / installed_pv * 100
+
+                        start_time = structured_data[year, month, day, hour, quarter].start
+                        end_time = structured_data[year, month, day, hour, quarter].end
+
+                        max_timestamp = (start_time, end_time) if percentage >= max_percentage else max_timestamp
+                        max_percentage = max(max_percentage, percentage)
+
+
+    print(f'Maximum PV production: {max_percentage:.2f}%')
+    print(f'At: {max_timestamp[0]} - {max_timestamp[1]}')
+    print('#' * 40)
+
 
     sys.exit(0)
 
@@ -391,7 +479,7 @@ class Data:
 
     def init_installed_capacity(self, values):
         self.installed_biomass = float(values[3].replace('.', '').replace(',', '.')) * 1_000_000
-        self.hydro = float(values[4].replace('.', '').replace(',', '.')) * 1_000_000
+        self.installed_hydro = float(values[4].replace('.', '').replace(',', '.')) * 1_000_000
         self.installed_wind_offshore = float(values[5].replace('.', '').replace(',', '.')) * 1_000_000
         self.installed_wind_onshore = float(values[6].replace('.', '').replace(',', '.')) * 1_000_000
         self.installed_pv = float(values[7].replace('.', '').replace(',', '.')) * 1_000_000
