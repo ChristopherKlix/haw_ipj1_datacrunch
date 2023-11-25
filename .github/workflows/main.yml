@@ -39,4 +39,4 @@ jobs:
           git commit -m "Updated public directory from test-branch"
 
           # Push the new branch to the remote repository
-          git push origin public
+          git push origin HEAD
