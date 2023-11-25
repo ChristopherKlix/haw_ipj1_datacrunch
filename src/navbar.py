@@ -23,10 +23,8 @@ class Navbar:
                 unsafe_allow_html=True,
             )
 
-        with open("./static/navbar.html", "r") as file:
-            navbar = file.read()
-            st.markdown(navbar, unsafe_allow_html=True)
+        with open('./static/navbar.html', 'r') as f:
+            st.markdown(f.read(), unsafe_allow_html=True)
 
-        with open("./static/navbar.js", "r") as file:
-            navbar_script = file.read()
-            components.html(f'<script defer id="navbar-js">{navbar_script}</script>', height=0)
+        with open('./static/navbar.css', 'r') as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
