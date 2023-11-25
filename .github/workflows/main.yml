@@ -5,6 +5,9 @@ on:
     branches:
       - test-branch
 
+permissions:
+  contents: write
+
 jobs:
   update_branch:
     runs-on: ubuntu-latest
@@ -12,10 +15,12 @@ jobs:
     steps:
       - name: Check out the code
         uses: actions/checkout@v4
+        with:
+          ref: 'public'
 
-      - name: Checkout public branch
-        run: |
-          git checkout public
+      # - name: Checkout public branch
+      #   run: |
+      #     git checkout public
 
       - name: Copy public directory from test-branch contents to root
         run: |
@@ -39,4 +44,4 @@ jobs:
           git commit -m "Updated public directory from test-branch"
 
           # Push the new branch to the remote repository
-          git push --set-upstream origin public
+          git push
