@@ -23,7 +23,7 @@ jobs:
 
       - name: Update log file
         run: |
-          current_time=$(date +"%T")
+          current_time=$(date +"%s")
           echo $current_time >> log.txt
 
       - name: Copy public directory from test-branch contents to root
