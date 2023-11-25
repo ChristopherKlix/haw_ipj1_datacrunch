@@ -1,0 +1,199 @@
+{
+    "unix_seconds": [
+        1672527600,
+        1672528500,
+        1672529400,
+        1672530300
+    ],
+    "production_types": [
+        {
+            "name": "Hydro pumped storage consumption",
+            "data": [
+                -961.8,
+                -1004.2,
+                -1236.7,
+                -1175.4
+            ]
+        },
+        {
+            "name": "Cross border electricity trading",
+            "data": [
+                -12645.2,
+                -12544.0,
+                -12526.2,
+                -12515.4
+            ]
+        },
+        {
+            "name": "Nuclear",
+            "data": [
+                2456.2,
+                2454.1,
+                2455.2,
+                2453.5
+            ]
+        },
+        {
+            "name": "Hydro Run-of-River",
+            "data": [
+                1749.1,
+                1745.9,
+                1746.0,
+                1743.0
+            ]
+        },
+        {
+            "name": "Biomass",
+            "data": [
+                4835.7,
+                4822.9,
+                4818.7,
+                4814.0
+            ]
+        },
+        {
+            "name": "Fossil brown coal / lignite",
+            "data": [
+                4016.3,
+                4018.4,
+                4031.5,
+                4033.0
+            ]
+        },
+        {
+            "name": "Fossil hard coal",
+            "data": [
+                1911.5,
+                1914.9,
+                1911.3,
+                1905.5
+            ]
+        },
+        {
+            "name": "Fossil oil",
+            "data": [
+                508.7,
+                509.9,
+                510.2,
+                508.7
+            ]
+        },
+        {
+            "name": "Fossil gas",
+            "data": [
+                3554.7,
+                3552.7,
+                3574.2,
+                3561.4
+            ]
+        },
+        {
+            "name": "Geothermal",
+            "data": [
+                20.1,
+                20.3,
+                20.6,
+                20.5
+            ]
+        },
+        {
+            "name": "Hydro water reservoir",
+            "data": [
+                74.1,
+                67.1,
+                66.4,
+                84.7
+            ]
+        },
+        {
+            "name": "Hydro pumped storage",
+            "data": [
+                30.3,
+                22.1,
+                22.1,
+                22.1
+            ]
+        },
+        {
+            "name": "Others",
+            "data": [
+                867.0,
+                866.4,
+                865.9,
+                866.3
+            ]
+        },
+        {
+            "name": "Waste",
+            "data": [
+                1064.1,
+                1062.9,
+                1069.1,
+                1057.3
+            ]
+        },
+        {
+            "name": "Wind offshore",
+            "data": [
+                2737.7,
+                2974.1,
+                3267.9,
+                3257.9
+            ]
+        },
+        {
+            "name": "Wind onshore",
+            "data": [
+                27779.6,
+                27828.4,
+                28388.8,
+                27619.0
+            ]
+        },
+        {
+            "name": "Solar",
+            "data": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "name": "Load",
+            "data": [
+                41551.5,
+                41211.7,
+                41076.8,
+                40886.7
+            ]
+        },
+        {
+            "name": "Residual load",
+            "data": [
+                11034.3,
+                10409.2,
+                9420.2,
+                10009.8
+            ]
+        },
+        {
+            "name": "Renewable share of generation",
+            "data": [
+                73.0,
+                73.2,
+                73.6,
+                73.2
+            ]
+        },
+        {
+            "name": "Renewable share of load",
+            "data": [
+                90.7,
+                92.1,
+                94.5,
+                93.0
+            ]
+        }
+    ]
+}
