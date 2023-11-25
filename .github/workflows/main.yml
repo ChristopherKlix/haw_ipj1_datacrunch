@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Check out the code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Checkout public branch
         run: |
@@ -31,7 +31,9 @@ jobs:
       - name: Commit and push changes
         run: |
           # Commit the changes
-          git commit -am "Move public directory contents to top-level"
+          git config --global user.name 'Christopher Klix'
+          git config --global user.email 'christopherklix@users.noreply.github.com'
 
+          git commit -am "Move public directory contents to top-level"
           # Push the new branch to the remote repository
           git push origin public
