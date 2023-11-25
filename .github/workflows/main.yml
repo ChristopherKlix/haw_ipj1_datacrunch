@@ -6,7 +6,7 @@ on:
       - test-branch
 
 jobs:
-  create_branch:
+  update_branch:
     runs-on: ubuntu-latest
 
     steps:
@@ -39,4 +39,4 @@ jobs:
           git commit -m "Updated public directory from test-branch"
 
           # Push the new branch to the remote repository
-          git push origin HEAD
+          git push --set-upstream origin public
