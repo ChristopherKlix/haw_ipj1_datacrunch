@@ -1,0 +1,35 @@
+name: Create Branch from Public Directory
+
+on:
+  push:
+    branches:
+      - test-branch
+
+jobs:
+  create_branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Create new branch
+        run: |
+          # Create a new branch
+          git checkout -b public
+
+          # Remove other files in the new branch
+          git rm -rf .
+
+          git restore --source main ./public
+          
+          # Move contents of the public directory to the root
+          git mv public/* .
+
+          git rm -rf ./public
+
+          # Commit the changes
+          git commit -am "Move public directory contents to top-level"
+          
+          # Push the new branch to the remote repository
+          git push origin public
