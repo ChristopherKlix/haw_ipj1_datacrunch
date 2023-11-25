@@ -28,7 +28,7 @@ jobs:
 
       - name: Copy public directory from test-branch contents to root
         run: |
-          git checkout test-branch -- public
+          git checkout origin/test-branch -- public
 
       - name: Move public directory contents to top-level
         run: |
