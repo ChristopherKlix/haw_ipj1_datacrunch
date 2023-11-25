@@ -18,33 +18,46 @@ jobs:
         with:
           ref: 'public'
 
-
-      # - name: Checkout public branch
-      #   run: |
-      #     git checkout public
-
-      - name: Copy public directory from test-branch contents to root
+      - name: Create test file
         run: |
-          git fetch origin test-branch:test-branch
-
-          git restore --source test-branch ./public
-
-      - name: Move public directory contents to top-level
-        run: |
-          # Move contents of the public directory to the root
-          mv public/* .
-
-          git rm -rf ./public
+          echo "test" > test.txt
 
       - name: Commit and push changes
         run: |
           # Commit the changes
           git config --global user.name 'Christopher Klix'
           git config --global user.email 'christopherklix@users.noreply.github.com'
-
           git add .
-
-          git commit -m "Updated public directory from test-branch"
-
-          # Push the new branch to the remote repository
+          git commit -m 'Updated test file'
           git push
+
+
+      # - name: Checkout public branch
+      #   run: |
+      #     git checkout public
+
+      # - name: Copy public directory from test-branch contents to root
+      #   run: |
+      #     git fetch origin test-branch:test-branch
+
+      #     git restore --source test-branch ./public
+
+      # - name: Move public directory contents to top-level
+      #   run: |
+      #     # Move contents of the public directory to the root
+      #     mv public/* .
+
+      #     git rm -rf ./public
+
+      # - name: Commit and push changes
+      #   run: |
+      #     # Commit the changes
+      #     git config --global user.name 'Christopher Klix'
+      #     git config --global user.email 'christopherklix@users.noreply.github.com'
+
+      #     git add .
+
+      #     git commit -m "Updated public directory from test-branch"
+
+      #     # Push the new branch to the remote repository
+      #     git push
