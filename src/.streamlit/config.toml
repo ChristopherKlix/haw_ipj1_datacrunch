@@ -1,7 +1,7 @@
 # .streamlit/config.toml
 
 [server]
-# enableStaticServing = true
+enableStaticServing = true
 
 [theme]
 base="light"
