@@ -212,15 +212,21 @@ class TestCase:
         Raises:
             None
         """
-        d = self.collection.get_by_timestamp(self.timestamp)
-        value = getattr(d, self.category)
-        self.actual_value = getattr(value, self.value_field)
-
         result = TestCaseResult()
         result.description = self.description
         result.timestamp = self.timestamp
         result.expected_value = self.expected_value
         result.actual_value = self.actual_value
+
+        try:
+            d = self.collection.get_by_timestamp(self.timestamp)
+        except DataNotFoundException as e:
+            result.result = False
+            return result
+
+        value = getattr(d, self.category)
+        self.actual_value = getattr(value, self.value_field)
+
 
         if (self.expected_value == None or self.actual_value == None):
             result.result = False
