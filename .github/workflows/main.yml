@@ -26,6 +26,11 @@ jobs:
           current_time=$(date +"%s")
           echo $current_time >> log.txt
 
+      - name: Clean branch
+        run: |
+          # Remove all files from the branch
+          git rm -rf .
+
       - name: Copy public directory from test-branch contents to root
         run: |
           git checkout origin/test-branch -- public
