@@ -1,4 +1,4 @@
-name: Create Branch from Public Directory
+name: Update Branch from Public Directory
 
 on:
   push:
@@ -13,23 +13,25 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v2
 
-      - name: Create new branch
+      - name: Checkout public branch
         run: |
-          # Create a new branch
-          git checkout -b public
+          git checkout public
 
-          # Remove other files in the new branch
-          git rm -rf .
+      - name: Copy public directory from test-branch contents to root
+        run: |
+          git restore --source test-branch ./public
 
-          git restore --source main ./public
-          
+      - name: Move public directory contents to top-level
+        run: |
           # Move contents of the public directory to the root
           git mv public/* .
 
           git rm -rf ./public
 
+      - name: Commit and push changes
+        run: |
           # Commit the changes
           git commit -am "Move public directory contents to top-level"
-          
+
           # Push the new branch to the remote repository
           git push origin public
