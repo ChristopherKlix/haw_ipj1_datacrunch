@@ -11,7 +11,15 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b public https://github.com/ChristopherKlix/haw_ipj1_datacrunch.git
+ENV TZ=Europe/Berlin
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+ENV USER=ChristopherKlix
+ENV REPO=haw_ipj1_datacrunch
+ENV BRANCH=public
+
+ADD https://api.github.com/repos/$USER/$REPO/git/refs/heads/$BRANCH version.json
+RUN git clone -b $BRANCH https://github.com/$USER/$REPO.git
 
 RUN mv haw_ipj1_datacrunch/* .
 
