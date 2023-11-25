@@ -1,0 +1,8 @@
+# .streamlit/config.toml
+
+[server]
+port = 80
+enableStaticServing = true
+
+[theme]
+base="light"
