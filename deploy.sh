@@ -9,5 +9,5 @@ cp ./requirements.txt ./public/
 # END: Copying requirements.txt
 
 # BEGIN: Recursive copying
-cp -r ./src/* ./public/
+cp -r ./src/ ./public/
 # END: Recursive copying
