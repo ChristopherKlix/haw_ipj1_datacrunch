@@ -93,17 +93,19 @@ power_sources = {
 def main():
     print('Launching app...')
 
-    page = PageManager()
+    # page = PageManager()
 
-    global production_data
-    global consumption_data
-    production_data, consumption_data = page.get_data()
+    # global production_data
+    # global consumption_data
+    # production_data, consumption_data = page.get_data()
 
     st.title('Energy Dashboard')
 
     st.warning('⚠️ This is a prototype!')
 
-    render_view_dashboard()
+    st.error('A breaking change has been made to the data. Page could not load.')
+
+    # render_view_dashboard()
 
 
 def ask_bot_btn_clicked():
