@@ -11,7 +11,7 @@ import data as data_loader
 
 from expire import EXPIRATION_DATE
 
-
+@st.cache_data(show_spinner="Parsing and caching data...")
 class PageManager:
     def __init__(self, layout: str = "centered") -> None:
         self.layout = layout
@@ -26,9 +26,10 @@ class PageManager:
             sys.exit(1)
 
     def is_expired(self) -> bool:
-        current_time = dt.datetime.now()
+        return False
+        # current_time = dt.datetime.now()
 
-        return current_time >= EXPIRATION_DATE
+        # return current_time >= EXPIRATION_DATE
 
     def config(self):
         print("PageLoader config")
@@ -78,7 +79,6 @@ class PageManager:
         Navbar.render()
 
     @staticmethod
-    @st.cache_resource
     def get_data():
         # Get the data
         # with st.spinner('Loading data...'):
