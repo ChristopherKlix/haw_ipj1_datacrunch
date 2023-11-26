@@ -11,7 +11,6 @@ import data as data_loader
 
 from expire import EXPIRATION_DATE
 
-@st.cache_data(show_spinner="Parsing and caching data...")
 class PageManager:
     def __init__(self, layout: str = "centered") -> None:
         self.layout = layout
@@ -79,6 +78,7 @@ class PageManager:
         Navbar.render()
 
     @staticmethod
+    @st.cache_data(show_spinner="Parsing and caching data...")
     def get_data():
         # Get the data
         # with st.spinner('Loading data...'):
