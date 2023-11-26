@@ -93,7 +93,7 @@ power_sources = {
 def main():
     print('Launching app...')
 
-    # page = PageManager()
+    page = PageManager()
 
     # global production_data
     # global consumption_data
@@ -270,7 +270,7 @@ def render_view_dashboard():
     plot_selection = st.selectbox('Plots',
                    options=["Produktion", "Installierte Leistung", "Verbrauch"])
 
-    if plot_selection is not "Verbrauch":
+    if plot_selection != "Verbrauch":
         st.multiselect('Sources',
                         options=["Wind Offshore", "Wind Onshore", "Photovoltaic", "Hydro", "Biomass", "Coal", "Charcoal", "Gas", "Other Conventional", "Nuclear"])
 

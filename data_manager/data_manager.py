@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from io import TextIOWrapper
 import os
+import sys
 from time import sleep, time
 from typing import Callable, Type, TypeAlias
 import datetime as dt
@@ -1178,6 +1179,8 @@ class DataManager:
         print('#' * 50)
 
         file.close()
+
+        sys.stdout.flush()
 
     def test_dataset(self, collection: Collection) -> bool:
         print('#' * 50)
