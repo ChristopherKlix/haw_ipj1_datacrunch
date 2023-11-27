@@ -131,7 +131,6 @@ class Szenarien_View:
                             ''')
             elif param_scenario == "Prototyp v0.1":
                 st.markdown('''
-                            FUuuuck I hate everything why is this project so stupid.
                             Der Verbrauch wird mittels eines Faktors in Bezug auf ein Referenzjahr proportional hochskaliert.
                             Die Produktion wird mittels der Ausbauziele im Verhältnis zu der Installierten Leistung im Referenzjahr hochskaliert.
                             Mehr nicht.
@@ -834,7 +833,7 @@ class Szenarien_View:
                             domain=['PV', 'Wind Offshore', 'Wind Onshore', 'Biomass', 'Hydro'],
                             range=['#ffb908', '#0898ff', '#3908ff', '#80A89C', '#53A6E4', '#ff0000', '#00ff00'],
                         ),
-                    ),
+                    )
                 ),
                 alt.Chart(
                     data=plot_data_0,
@@ -866,13 +865,13 @@ class Szenarien_View:
         surplus_90 = 0
 
         for i in range(len(data_2030)):
-            if data_2030[i] * 0.8 < production_renewables_2030[i]:
+            if data_2030[i] * 0.8 <= production_renewables_2030[i]:
                 surplus_80 += 1
 
-            if data_2030[i] * 0.9 < production_renewables_2030[i]:
+            if data_2030[i] * 0.9 <= production_renewables_2030[i]:
                 surplus_90 += 1
 
-            if data_2030[i] < production_renewables_2030[i]:
+            if data_2030[i] <= production_renewables_2030[i]:
                 surplus += 1
 
         total_consumption_2030 = sum(data_2030)
@@ -893,6 +892,137 @@ class Szenarien_View:
         st.write(f'Surplus 80%: {surplus_80} / {len(data_2030)} -> {surplus_80 / len(data_2030) * 100:.2f}%')
         st.write(f'Surplus 90%: {surplus_90} / {len(data_2030)} -> {surplus_90 / len(data_2030) * 100:.2f}%')
         st.write(f'Surplus: {surplus} / {len(data_2030)} -> {surplus / len(data_2030) * 100:.2f}%')
+
+
+        # Count intervals with n percent coverage
+        _gcp: int = 0
+
+        for i in range(len(production_renewables_2030)):
+            p: float = production_renewables_2030[i]
+            c: float = data_2030[i]
+            r: int   = round((p / c) * 100)
+
+            _gcp = r if r >= _gcp else _gcp
+
+        # Array storing distribution
+        _gcp_dist = np.zeros(_gcp + 1, dtype=int)
+
+        for i in range(len(production_renewables_2030)):
+            p: float = production_renewables_2030[i]
+            c: float = data_2030[i]
+            r: int   = round((p / c) * 100)
+
+            _gcp_dist[r] += 1
+
+        # Parse to pd.DataFrame
+        _gcp_dist_df = pd.DataFrame({
+            'x': np.arange(0, _gcp + 1, 1),
+            'y': _gcp_dist,
+        })
+
+        # Send to View
+        st.altair_chart(
+            altair_chart=alt.Chart(
+                data=_gcp_dist_df,
+            ).mark_bar().encode(
+                x=alt.X(
+                    'x:O',
+                    axis=alt.Axis(title='Prozentuale Deckung'),
+                ),
+                y=alt.Y(
+                    'y:Q',
+                    axis=alt.Axis(title='Anzahl an Intervallen'),
+                ),
+                color=alt.condition(
+                    alt.datum.x >= 100,
+                    alt.value('#00FF00'),
+                    alt.value('#FF0000')
+                )
+            ),
+            use_container_width=True,
+        )
+
+        st.write(f'GCP: {_gcp}')
+        st.write(f'Count: {_gcp_dist[_gcp]}')
+
+        net_balance = np.zeros(len(data_2030))
+
+        for i in range(len(net_balance)):
+            p: float = production_renewables_2030[i]
+            c: float = data_2030[i]
+            d: float = p - c
+
+            net_balance[i] = d
+
+        cummulative_net_balance = np.copy(net_balance)
+
+        # Parse to pd.DataFrame
+        _net_balance_df = pd.DataFrame({
+            'Date': x_range,
+            'y': net_balance / 1_000_000_000,
+        })
+
+        _cummulative_net_balance_df = pd.DataFrame({
+            'Date': x_range,
+            'y': cummulative_net_balance,
+        })
+
+        _net_balance_df['Date'] = pd.to_datetime(_net_balance_df['Date'])
+        _net_balance_df['Date'] = _net_balance_df['Date'].dt.strftime('%Y-%m-%d')
+
+        _cummulative_net_balance_df['Date'] = pd.to_datetime(_cummulative_net_balance_df['Date'])
+        _cummulative_net_balance_df['Date'] = _cummulative_net_balance_df['Date'].dt.strftime('%Y-%m-%d')
+
+        _cummulative_net_balance_df = _cummulative_net_balance_df.groupby(['Date']).sum().reset_index()
+
+        _cummulative_net_balance_df = pd.melt(_cummulative_net_balance_df, id_vars=["Date"], var_name="Load Source", value_name="Load")
+
+        # Generate a cummulative sum
+        _cummulative_net_balance_df['Load'] = _cummulative_net_balance_df['Load'].cumsum()
+        _cummulative_net_balance_df['Load'] /= 1_000_000_000_000
+
+        # Send to View
+        st.altair_chart(
+            altair_chart=alt.Chart(
+                data=_net_balance_df,
+            ).mark_bar().encode(
+                x=alt.X(
+                    'Date:O',
+                    axis=alt.Axis(title='Datum [M]')
+                ),
+                y=alt.Y(
+                    'y:Q',
+                    axis=alt.Axis(title='Net Balance [GWh]'),
+                ),
+                color=alt.condition(
+                    alt.datum.y >= 0,
+                    alt.value('#00FF00'),
+                    alt.value('#FF0000')
+                )
+            ),
+            use_container_width=True,
+        )
+
+        st.altair_chart(
+            altair_chart=alt.Chart(
+                data=_cummulative_net_balance_df,
+            ).mark_area(interpolate='monotone').encode(
+                x=alt.X(
+                    'Date:O',
+                    axis=alt.Axis(title='Datum [M]')
+                ),
+                y=alt.Y(
+                    'Load:Q',
+                    axis=alt.Axis(title='Net Balance [TWh]'),
+                ),
+                color=alt.condition(
+                    alt.datum.y >= 0,
+                    alt.value('#00FF00'),
+                    alt.value('#FF0000')
+                )
+            ),
+            use_container_width=True,
+        )
 
 
 if __name__ == "__main__":
