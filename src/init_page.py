@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import streamlit.components.v1 as components
 import datetime as dt
@@ -10,6 +11,12 @@ from navbar import Navbar
 import data as data_loader
 
 from expire import EXPIRATION_DATE
+
+def debug(s: str):
+    if st.session_state.debug:
+        st.code(s, language='python')
+
+st.debug = debug
 
 class PageManager:
     def __init__(self, layout: str = "centered") -> None:
@@ -73,6 +80,10 @@ class PageManager:
         # Min Coverage
         if 'min_coverage' not in st.session_state:
             st.session_state.min_coverage = 80
+
+        # Get ENV variable for debug mode
+        env = os.getenv('DEBUG', 'false')
+        st.session_state.debug = env.lower() == 'true'
 
     def render_navbar(self):
         Navbar.render()
