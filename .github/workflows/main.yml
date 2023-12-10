@@ -1,35 +1,56 @@
-name: Create Branch from Public Directory
+name: Update Branch from Public Directory
 
 on:
   push:
     branches:
       - test-branch
 
+permissions:
+  contents: write
+
 jobs:
-  create_branch:
+  update_branch:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the code
-        uses: actions/checkout@v2
+      - name: Check out public branch
+        uses: actions/checkout@v4
+        with:
+          ref: 'public'
 
-      - name: Create new branch
+      - name: Fetch test-branch
+        run: git fetch origin test-branch
+
+      - name: Update log file
         run: |
-          # Create a new branch
-          git checkout -b public
+          current_time=$(date +"%s")
+          echo $current_time >> log.txt
 
-          # Remove other files in the new branch
+      - name: Clean branch
+        run: |
+          # Remove all files from the branch
           git rm -rf .
 
-          git restore --source main ./public
-          
+      - name: Copy public directory from test-branch contents to root
+        run: |
+          git checkout origin/test-branch -- public
+
+      - name: Move public directory contents to top-level
+        run: |
           # Move contents of the public directory to the root
-          git mv public/* .
+          mv public/* .
 
           git rm -rf ./public
 
+      - name: Commit and push changes
+        run: |
           # Commit the changes
-          git commit -am "Move public directory contents to top-level"
-          
+          git config --global user.name 'Christopher Klix'
+          git config --global user.email 'christopherklix@users.noreply.github.com'
+
+          git add .
+
+          git commit -m "Updated public directory from test-branch"
+
           # Push the new branch to the remote repository
-          git push origin public
+          git push

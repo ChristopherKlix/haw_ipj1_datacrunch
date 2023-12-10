@@ -1,0 +1,30 @@
+.stApp {
+    background: none;
+}
+
+div#background-image {
+    position: fixed;
+    display: flex;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("https://images.pexels.com/photos/3619870/pexels-photo-3619870.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    /* filter: blur(5px); */
+    /* opacity: 0.5; */
+    z-index: -2;
+}
+
+div#background-image__content {
+    /* position: fixed; */
+    position: relative;
+    margin-top: 5rem;
+    margin: auto;
+    width: 60%;
+    height: 100%;
+    background: white;
+    z-index: -1;
+}
