@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 from io import TextIOWrapper
 import os
 import sys
-from time import sleep, time
+from threading import Thread
+from time import sleep, time, perf_counter
 from typing import Callable, Type, TypeAlias
 import datetime as dt
 from pytz import timezone
@@ -68,7 +69,17 @@ class Data:
 
     @dataclass(unsafe_hash=True)
     class Production(EnergySources):
-        ...
+        @property
+        def total(self) -> float:
+            return sum([v for v in self.__dict__.values()])
+
+        @property
+        def total_renewables(self) -> float:
+            return self.get_total_renewables()
+
+        @property
+        def total_fossils(self) -> float:
+            return self.get_total_fossils()
 
     production: Production         = field(default_factory=Production, init=True)
 
@@ -226,13 +237,13 @@ class TestCase:
             return result
 
         value = getattr(d, self.category)
-        self.actual_value = getattr(value, self.value_field)
+        result.actual_value = getattr(value, self.value_field)
 
 
-        if (self.expected_value == None or self.actual_value == None):
+        if (result.expected_value == None or result.actual_value == None):
             result.result = False
 
-        result.result = self.expected_value == self.actual_value
+        result.result = result.expected_value == result.actual_value
 
         return result
 
@@ -269,6 +280,15 @@ class Collection:
         self.parse_func = None
         self.test_cases = list()
         self.data = np.empty(size, dtype=Data)
+
+    def __iter__(self) -> iter:
+        """
+        Returns an iterator for the data array.
+
+        Returns:
+            Data: An iterator for the data array.
+        """
+        return iter(self.data)
 
     def set_size(self, size: int) -> None:
         """
@@ -326,7 +346,7 @@ class Collection:
         """
         return self.data
 
-    def get_range(self, start: dt.datetime, end: dt.datetime) -> NDArray:
+    def get_range(self, start: dt.datetime, end: dt.datetime) -> DataArray:
         """
         Returns a subset of the data array based on the given start and end datetimes.
 
@@ -340,6 +360,7 @@ class Collection:
         data_as_list = [d for d in self.data if d.start >= start and d.start <= end]
         data_as_NDArray = np.array(data_as_list, dtype=Data)
         return data_as_NDArray
+
 
     def get(self, start: dt.datetime, unsafe_return: bool = False) -> Data | None:
         """
@@ -464,6 +485,19 @@ class Collection:
             DataArray: A subset of the data array.
         """
         return self.data[start:end]
+
+    def get_last_of_year(self, year: int) -> Data:
+        """
+        Returns the last data of the given year.
+
+        Args:
+            year (int): The year of the data to return.
+
+        Returns:
+            Data: The last data of the given year.
+        """
+        year: DataArray = self.get_year(year)
+        return year[-1]
 
     def get_length(self) -> int:
         """
@@ -1010,17 +1044,17 @@ class Parser:
             # Multiply by 1_000_000 to convert from MWh to Wh
             data.production *= 1_000_000
 
-            data.power.pv                 = float(vals['Installed solar'])
-            data.power.wind_offshore      = float(vals['Installed wind offshore'])
-            data.power.wind_onshore       = float(vals['Installed wind onshore'])
-            data.power.biomass            = float(vals['Installed biomass'])
-            data.power.hydro              = float(vals['Installed hydro'])
-            data.power.other_renewables   = float(vals['Installed other renewables'])
-            data.power.coal               = float(vals['Installed fossil hard coal'])
-            data.power.lignite            = float(vals['Installed fossil brown coal / lignite'])
-            data.power.gas                = float(vals['Installed fossil gas'])
+            data.power.pv                  = float(vals['Installed solar'])
+            data.power.wind_offshore       = float(vals['Installed wind offshore'])
+            data.power.wind_onshore        = float(vals['Installed wind onshore'])
+            data.power.biomass             = float(vals['Installed biomass'])
+            data.power.hydro               = float(vals['Installed hydro'])
+            data.power.other_renewables    = float(vals['Installed other renewables'])
+            data.power.coal                = float(vals['Installed fossil hard coal'])
+            data.power.lignite             = float(vals['Installed fossil brown coal / lignite'])
+            data.power.gas                 = float(vals['Installed fossil gas'])
             data.power.other_conventionals = float(vals['Installed other conventionals'])
-            data.power.nuclear            = float(vals['Installed nuclear'])
+            data.power.nuclear             = float(vals['Installed nuclear'])
 
             # Multiply by 1_000_000 to convert from MWh to Wh
             data.power *= 1_000_000
@@ -1033,8 +1067,8 @@ class Parser:
 
         except KeyError as e:
             print(f'KeyError: {e}')
-        finally:
-            return data
+
+        return data
 
 
 @dataclass
