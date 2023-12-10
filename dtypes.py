@@ -75,3 +75,70 @@ class View:
         with open("./static/background.css", "r") as file:
             css = file.read()
             st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+
+
+class Unit:
+    # ----------
+    # Energy
+    # ----------
+    @staticmethod
+    def PWh(value) -> int:
+        return value * 1_000_000_000_000_000
+
+    @staticmethod
+    def TWh(value) -> int:
+        return value * 1_000_000_000_000
+
+    @staticmethod
+    def GWh(value) -> int:
+        return value * 1_000_000_000
+
+    @staticmethod
+    def MWh(value) -> int:
+        return value * 1_000_000
+
+    @staticmethod
+    def kWh(value) -> int:
+        return value * 1_000
+
+    # ----------
+    # Power
+    # ----------
+    @staticmethod
+    def PW(value) -> int:
+        return value * 1_000_000_000_000_000
+
+    @staticmethod
+    def TW(value) -> int:
+        return value * 1_000_000_000_000
+
+    @staticmethod
+    def GW(value) -> int:
+        return value * 1_000_000_000
+
+    @staticmethod
+    def MW(value) -> int:
+        return value * 1_000_000
+
+    @staticmethod
+    def kW(value) -> int:
+        return value * 1_000
+
+    # ----------
+    # Mass
+    # ----------
+    @staticmethod
+    def kg(value) -> int:
+        return value
+
+    @staticmethod
+    def g(value) -> int:
+        return value / 1_000
+
+    @staticmethod
+    def tonne(value) -> int:
+        return value * 1_000
+
+    @staticmethod
+    def kt(value) -> int:
+        return value * 1_000_000
