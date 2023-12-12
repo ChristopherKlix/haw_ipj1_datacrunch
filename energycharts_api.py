@@ -406,7 +406,7 @@ def merge_smard_files() -> None:
 
         solar               = solar.replace('.', '').replace(',', '.')
         wind_onshore        = wind_onshore.replace('.', '').replace(',', '.')
-        wind_offshore       = wind_offshore.replace('.', '').replace(',', '.')
+        wind_offshore       = wind_offshore.replace('.', '').replace(',', '.').replace('-', '0')
         biomass             = biomass.replace('.', '').replace(',', '.')
         hydro               = hydro.replace('.', '').replace(',', '.')
         other_renewables    = other_renewables.replace('.', '').replace(',', '.')
