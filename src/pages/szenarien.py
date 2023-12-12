@@ -105,6 +105,7 @@ class Szenarien_View:
                 param_scenario = st.selectbox(
                     label="Szenario",
                     options=self.scenarios.values(),
+                    index=1,
                     key='scenario-selection',
                 )
 
