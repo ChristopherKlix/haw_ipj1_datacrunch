@@ -5,13 +5,15 @@ from threading import Event, Thread
 from pytz import timezone
 from time import sleep
 
+from functools import lru_cache
+
 import numpy as np
 from numpy.typing import NDArray
 import pandas as pd
 import streamlit as st
 import altair as alt
 
-from dtypes import URLImage, Unit, View
+from dtypes import Unit
 
 from data_manager.data_manager import Collections, Collection, Data, DataArray
 
@@ -154,7 +156,6 @@ class Prototype_v0_2:
             d.production.biomass       *= POWER_FACTOR_BIOMASS
             d.production.hydro          = _data.production.hydro
             d.production.hydro         *= POWER_FACTOR_HYDRO
-            # d.production.gas            = BASE_LOAD_COVERAGE / collection_2030.get_length()
 
             d.power                     = _data.power
             d.power.pv                  = POWER_FACTOR_PV
@@ -353,13 +354,6 @@ class Prototype_v0_2:
                 # and stop if the balance is negative
                 # ----------------------------------------
 
-                # for i in range(total_balance.size):
-                #     lowest_point = min(lowest_point, total_balance[i])
-
-                #     if total_balance[i] < RESERVE_BALANCE:
-                #         balance_is_negative = True
-                #         break
-
                 remaining_storage = storage_balance[-1] * storage.H_TO_W
                 storage_less_than_initial = remaining_storage <= INITIAL_BALANCE
                 reverse_storage_less = lowest_point <= RESERVE_BALANCE
@@ -373,9 +367,6 @@ class Prototype_v0_2:
 
                 if iterations > 200:
                     simulation_stop = True
-
-                # storage.stop_electrolysis()
-                # del storage
 
         if not simulation_successfull:
             st.warning('Maximum number of iterations reached.')
@@ -1000,16 +991,11 @@ class MagicStorage:
     STORAGE_CAP: int = Unit.kt(400)
 
     def __init__(self, initial_energy: float = 0.0):
-        # self.energy = initial_energy
         self.charge(initial_energy)
 
     def start_electrolysis(self):
         self.thread = self.Electrolysis(self)
         self.thread.start()
-
-        # print(f'Converting initial energy of {self.energy} W.')
-        # print(f'We have {self.hydrogen} kg of hydrogen now and {self.energy} W left.')
-        # print(f'Start simulation.')
 
     class Electrolysis(Thread):
 
@@ -1025,7 +1011,6 @@ class MagicStorage:
             print(f"{self.name} is powering up...")
 
             while not self._stop_event.is_set():
-                # print(f'Storage Energy: {self.storage.energy} W - Hydrogen: {self.storage.hydrogen}')
                 if self.storage.energy >= self.storage.W_TO_H:
 
                     # Convert all possible energy into hydrogen
@@ -1033,10 +1018,6 @@ class MagicStorage:
                     possible = self.storage.energy / self.storage.W_TO_H
                     self.storage.energy -= possible * self.storage.W_TO_H
                     self.storage.hydrogen += possible
-
-
-                    # self.storage.energy -= self.storage.W_TO_H * 1_000
-                    # self.storage.hydrogen += 1_000
 
             print(f"{self.name} is stopped.")
 
@@ -1068,13 +1049,10 @@ class MagicStorage:
     def discharge(self, energy: float) -> float:
 
         required_hydrogen = energy / self.H_TO_W
-        # print(f'Discharging... {round(energy / 1_000_000_000, 2)} GW - Requiring {round(required_hydrogen / 1_000_000, 2)} kt of hydrogen.')
 
-        # Debug from J. Erdmann
         if required_hydrogen > self.hydrogen:
             raise StorageEmptyException()
         else:
-            # print(f'Storage now has {round(self.hydrogen / 1_000_000, 2)} kt of hydrogen.')
             return self.combust(required_hydrogen)
 
     def combust(self, hydrogen: float) -> float:
