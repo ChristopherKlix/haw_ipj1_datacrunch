@@ -292,6 +292,7 @@ class Prototype_v0_2:
         lowest_point = np.iinfo(np.int64).max
 
         storage_balance: NDArray   = np.zeros(collection_2030.get_length(), dtype=int)
+        renewable_share_percentage = np.zeros(collection_2030.get_length(), dtype=float)
 
         simulation_successfull = False
 
@@ -324,16 +325,21 @@ class Prototype_v0_2:
                     d: Data = d
                     net_balance[i] = d.production.total - d.consumption.load
 
+                    discharge: int = 0
+                    charge: int    = 0
+
                     # ----------------------------------------
                     # Charge or discharge the storage
                     # ----------------------------------------
                     if net_balance[i] > 0:
                         # Putting energy into a temporary battery
-                        storage.charge(net_balance[i])
+                        discharge = net_balance[i]
+                        storage.charge(discharge)
                     elif net_balance[i] < 0:
                         # Taking energy from a hydrogen gas turbine
                         try:
-                            storage.discharge(abs(net_balance[i]))
+                            charge = abs(net_balance[i])
+                            storage.discharge(charge)
                         except StorageEmptyException as e:
                             print('Storage is empty. Stopping iteration.')
                             balance_is_negative = True
@@ -341,6 +347,11 @@ class Prototype_v0_2:
 
                     storage_balance[i] = storage.hydrogen
                     lowest_point = min(lowest_point, storage.hydrogen * storage.H_TO_W)
+
+                    numerator = (d.production.total_renewables + discharge)
+                    denominator = (d.consumption.load + charge)
+
+                    renewable_share_percentage[i] = numerator / denominator
 
                 # ----------------------------------------
                 # Calculate the total balance (cumulative)
