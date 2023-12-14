@@ -5,6 +5,30 @@ import numpy as np
 import altair as alt
 
 
+def st_todo(s: str = ''):
+    s = s.strip()
+
+    lipsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. At lectus urna duis convallis convallis tellus id. Diam sollicitudin tempor id eu nisl nunc mi ipsum faucibus. Ut pharetra sit amet aliquam.'
+
+    content = s if s else lipsum
+
+    st.markdown(
+        f'''
+        <div class="todo-wrapper" style="margin: 1rem 0; background-color: #FFD700; border-radius: 0.5rem;">
+            <div class="todo-tag" style="display: inline-block; padding: 0.1rem; margin: 0.5rem; background-color: #000000; color: #FFD700; border-radius: 0.5rem;">
+                TODO:
+            </div>
+            <div class="todo-content" style="display: inline-block; padding: 0.1rem; margin: 0.5rem;">
+                {content}
+            </div>
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
+
+st.todo = st_todo
+
+
 class Source:
     def __init__(self, title: str, author: str, date: str, url: str, is_gov_source: bool = False, government_locality: str = None):
         self.title = title
