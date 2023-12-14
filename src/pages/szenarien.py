@@ -5,6 +5,8 @@ from dtypes import View, URLImage
 
 from scenarios.prototype_v0_1 import Prototype_v0_1
 from scenarios.prototype_v0_2 import Prototype_v0_2
+from scenarios.prototype_v0_2 import Prototype_v0_2_Snapshot_1
+from scenarios.prototype_v0_2 import Prototype_v0_2_Snapshot_2
 
 class Szenarien_View:
     def __init__(self):
@@ -46,6 +48,8 @@ class Szenarien_View:
             self.simulate_prototype_v0_1()
         elif st.session_state.scenario == 'prototype-v0.2':
             self.simulate_prototype_v0_2()
+        elif st.session_state.scenario == 'prototype-v0.2-snapshot-1':
+            self.simulate_prototype_v0_2_snapshot_1()
 
     def on_simulate_btn_pressed(self):
         print('Simulate')
@@ -63,6 +67,7 @@ class Szenarien_View:
         self.scenarios = {
             'prototype-v0.1': 'Prototyp v0.1',
             'prototype-v0.2': 'Prototyp v0.2',
+            'prototype-v0.2-snapshot-1': 'prototype-v0.2-SNAPSHOT-1',
             'default': "📊 Referenz Szenario (empfohlen)",
             'best-case': "☀️ Szenario \"Best Case\"",
             'worst-case': "🌧️ Szenario \"Worst Case\"",
@@ -170,6 +175,8 @@ class Szenarien_View:
             self.render_prototype_v0_1_view()
         elif param_scenario == self.scenarios.get('prototype-v0.2'):
             self.render_prototype_v0_2_view()
+        elif param_scenario == self.scenarios.get('prototype-v0.2-snapshot-1'):
+            self.render_prototype_v0_2_snapshot_1_view()
 
         # ---------------
         # ! Footer
@@ -716,6 +723,134 @@ class Szenarien_View:
                 '''
             )
 
+    def render_prototype_v0_2_snapshot_1_view(self):
+        st.session_state.total_consumption_2030 = None
+        st.session_state.reference_year         = None
+
+        st.divider()
+
+        st.markdown('#### ⚙️ Szenario Parameter')
+        st.markdown('''
+                    Hier können die Parameter für das benutzerdefinierte Szenario angepasst werden.
+                    ''')
+
+        cols_params_row0 = st.columns(2, gap='medium')
+
+        with cols_params_row0[0]:
+            container_consumption = st.container()
+            container_inital_storage = st.container()
+
+        with cols_params_row0[1]:
+            container_reference_year = st.container()
+            container_simulation_limit = st.container()
+
+        with container_consumption:
+            st.markdown('#### 🔌 Stromverbrauch')
+
+            st.markdown('''
+                        Der Stromverbrauch gibt an, wie viel Strom im Jahr 2030 gesamt verbraucht wird.
+                        Dies beinhaltet Netzverluste und Verbrauch der Kraftwerke.
+                        Nicht beinhaltet sind Importe und Exporte.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.caption('''
+                        Bei dem Stromverbrauch handelt es sich um eine proportionale Skalierung
+                        der Verbrauchsprofile aus dem Referenzjahr, welches ebenfalls als Parameter
+                        festgelegt werden kann.
+                        ''')
+
+            st.selectbox(
+                label="Berechnungsgrundlage",
+                options=[
+                    "Gesamter Stromverbrauch (pauschal)",
+                ],
+            )
+
+            cols_consumption_simple = st.columns(2, gap='medium')
+
+            with cols_consumption_simple[0]:
+                st.session_state.total_consumption_2030 = st.number_input(
+                    label="Gesamter Stromverbrauch [TWh]",
+                    min_value=0,
+                    max_value=1_000,
+                    value=650,
+                    step=10
+                )
+
+        with container_inital_storage:
+            st.markdown('#### 🔋 Initialer Speicher')
+
+            st.markdown('''
+                        Der Initiale Speicher simuliert einen idealen Energiespeicher,
+                        welcher bei Bedarf mit unendlicher Leistung Energie bereitstellen kann.
+                        Dieser Speicher kann nicht geladen werden.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.caption('''
+                        Der Initiale Speicher ermöglicht der Simulation in Defizitphasen
+                        Strom aus dem Speicher zu beziehen.
+                        Nicht berechnet werden Wirkungsgerade oder realistische Speichermedien.
+                        Der Strom wird sofort aus dem Speicher bezogen
+                        und der Speicher hat keine Verluste über längere Zeit.
+                        ''')
+
+            cols_initial_storage_simple = st.columns(2, gap='medium')
+
+            with cols_initial_storage_simple[0]:
+                st.session_state.initial_storage = st.number_input(
+                    label="Initialer Speicher [TWh]",
+                    min_value=0,
+                    max_value=100,
+                    value=10,
+                    step=1
+                )
+
+        with container_reference_year:
+            st.markdown('''
+                        #### 📅 Referenzjahr
+                        ''')
+
+            st.markdown('''
+                    Die Erzeugungseffizienz gibt an, wie viel Prozent der installierten Leistung tatsächlich erzeugt wird.
+                    Dieser Wert kann je nach Wetterbedingungen variieren.
+                    Die Simulation berechnet einen erwarten Wert für das Jahr 2030.
+                    Mit den Slidern kann dieser Wert prozentual nach oben oder unten angepasst werden.
+                    ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.caption('''
+                        Die Effizienz ist ein Kennwert, welcher in der Simulation eine Vielzahl von Faktoren berücksichtigt.
+                        So beeinflusst der Faktor die simulierte Wetterbedingungen, die Anzahl der Sonnenstunden, die Anzahl der Windstunden, die Anzahl der Wolkenstunden, etc.
+                        Daher dient dieser Wert als Prozentuale Angabe, mit Abweichung vom simulierten wahrscheinlichen Referenzjahr in 2030.
+                        ''')
+
+            st.session_state.reference_year = st.selectbox(
+                label='Referenzjahr',
+                options=[*range(2015, 2023)],
+                index=6,
+                help="Das Referenzjahr wird als Basis für die Simulation verwendet."
+            )
+
+        with container_simulation_limit:
+            st.markdown('#### ❌ Simulationsiterationen')
+
+            st.todo('''
+                        Der Initiale Speicher simuliert einen idealen Energiespeicher,
+                        welcher bei Bedarf mit unendlicher Leistung Energie bereitstellen kann.
+                        Dieser Speicher kann nicht geladen werden.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.todo()
+
+            with st.columns(2, gap='medium')[0]:
+                st.session_state.iteration_limit = st.number_input(
+                    label="Iterationslimit",
+                    min_value=1,
+                    max_value=400,
+                    value=200,
+                    step=1
+                )
+
+
     # ---------------
     # ! Simulations
     # ---------------
@@ -725,6 +860,10 @@ class Szenarien_View:
 
     def simulate_prototype_v0_2(self):
         prototype = Prototype_v0_2(self)
+        prototype.simulate()
+
+    def simulate_prototype_v0_2_snapshot_1(self):
+        prototype = Prototype_v0_2_Snapshot_1(self)
         prototype.simulate()
 
 
