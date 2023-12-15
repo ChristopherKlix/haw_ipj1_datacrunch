@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+from streamlit.components.v1 import html
 
 
 class Navbar:
@@ -28,3 +29,6 @@ class Navbar:
 
         with open('./static/navbar.css', 'r') as f:
             st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+        with open('./static/navbar.js', 'r') as f:
+            html(f'<script style="display: none;">{f.read()}</script>')
