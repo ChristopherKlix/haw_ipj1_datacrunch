@@ -15,7 +15,7 @@ def st_todo(s: str = ''):
     st.markdown(
         f'''
         <div class="todo-wrapper" style="margin: 1rem 0; background-color: #FFD700; border-radius: 0.5rem;">
-            <div class="todo-tag" style="display: inline-block; padding: 0.1rem; margin: 0.5rem; background-color: #000000; color: #FFD700; border-radius: 0.5rem;">
+            <div class="todo-tag" style="display: inline-block; padding: 0.1rem 0.5rem; margin: 0.5rem; background-color: #000000; color: #FFD700; border-radius: 0.5rem;">
                 TODO:
             </div>
             <div class="todo-content" style="display: inline-block; padding: 0.1rem; margin: 0.5rem;">
