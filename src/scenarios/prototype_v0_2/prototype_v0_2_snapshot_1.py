@@ -273,7 +273,15 @@ class Prototype_v0_2_Snapshot_1:
 
         base_load_overshoot = total_gas / deficit
         st.code(f'Base Load Overproduction = {round(base_load_overshoot * 100, 2)} %')
-        st.code(f'Base Load Share (Consumption) = {round(total_gas / total_consumption * 100, 2)} %')
+
+        base_load_share = round(total_gas / total_consumption * 100, 2)
+
+        if base_load_share >= 30:
+            st.error(f'Base Load Share (Consumption) = {base_load_share} %', icon='⚠️')
+        elif base_load_share >= 20:
+            st.warning(f'Base Load Share (Consumption) = {base_load_share} %', icon='⚠️')
+        else:
+            st.code(f'Base Load Share (Consumption) = {base_load_share} %')
 
 
         # ----------------------------------------

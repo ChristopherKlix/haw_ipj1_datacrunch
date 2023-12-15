@@ -26,6 +26,8 @@ class Prototype_v0_2_Snapshot_2:
         try:
             self.params['reference_year'] = st.session_state.reference_year
             self.params['load'] = st.session_state.total_consumption_2030
+            self.params['initial-storage'] = st.session_state.initial_storage
+            self.params['iteration-limit'] = st.session_state.iteration_limit
         except:
             st.error('Could not parse parameters.')
             return
@@ -69,21 +71,10 @@ class Prototype_v0_2_Snapshot_2:
 
         LOAD_FACTOR         : float = LOAD_TARGET          / LOAD_CURRENT
 
-        INITIAL_BALANCE: int = Unit.TWh(10)
+        INITIAL_BALANCE: int = Unit.TWh(self.params['initial-storage'])
         RESERVE_BALANCE: int = Unit.TWh(1)
 
-
-        # Debug
-        # st.debug(f'POWER_FACTOR_PV     : {POWER_FACTOR_PV}')
-        # st.debug(f'POWER_FACTOR_WINDOFF: {POWER_FACTOR_WINDOFF}')
-        # st.debug(f'POWER_FACTOR_WINDON : {POWER_FACTOR_WINDON}')
-        # st.debug(f'POWER_FACTOR_BIOMASS: {POWER_FACTOR_BIOMASS}')
-        # st.debug(f'POWER_FACTOR_HYDRO  : {POWER_FACTOR_HYDRO}')
-        # st.debug(f'LOAD_FACTOR         : {LOAD_FACTOR}')
-
-
-        # st.debug('Prototype_v0_2 works!')
-
+        st.warning('This is a SNAPSHOT version. Bugs are expected.')
 
         # ----------------------------------------
         # Create a Collection for the year 2030
@@ -192,7 +183,7 @@ class Prototype_v0_2_Snapshot_2:
         # ----------------------------------------
         # Apply ramp factor
         # ----------------------------------------
-        _summer_factor = 0.5
+        _summer_factor = 1.0
         SUMMER_FACTOR = _summer_factor
         WINTER_FACTOR = 1.0
 
@@ -200,8 +191,8 @@ class Prototype_v0_2_Snapshot_2:
 
         WINTER_FACTOR = x_W(7, 5, SUMMER_FACTOR)
 
-        st.debug(f'Summer Factor: {SUMMER_FACTOR}')
-        st.debug(f'Winter Factor: {WINTER_FACTOR}')
+        # st.debug(f'Summer Factor: {SUMMER_FACTOR}')
+        # st.debug(f'Winter Factor: {WINTER_FACTOR}')
 
         ramp_factor = np.ones(collection_2030.get_length(), dtype=float)
 
@@ -257,24 +248,9 @@ class Prototype_v0_2_Snapshot_2:
             collection_2030.data[i].production.gas *= ramp_factor[i]
 
         recalculated_sum = sum(d.production.gas for d in collection_2030)
-        st.debug(f'Recalculated Sum: {round(recalculated_sum / 1_000_000_000_000, 2)} TWh')
+        # st.debug(f'Recalculated Sum: {round(recalculated_sum / 1_000_000_000_000, 2)} TWh')
 
-        st.success('Done!')
-
-        # # Create a start and end date
-        # # ! tzinfo does not work correctly with pytz
-        # start = dt.datetime(2030, 3, 31,  0,  0)
-        # end   = dt.datetime(2030, 3, 31, 23, 45)
-
-        # # Localize to Europe/Berlin
-        # start = timezone('Europe/Berlin').localize(start)
-        # end   = timezone('Europe/Berlin').localize(end)
-
-        # # Get the data for the given date range
-        # _test = collection_2030.get_range(start, end)
-
-
-
+        st.success('Initial calculations completed!')
 
         # ----------------------------------------
         # Calculate the balance
@@ -382,20 +358,29 @@ class Prototype_v0_2_Snapshot_2:
         if not simulation_successfull:
             st.warning('Maximum number of iterations reached.')
             st.error('Simulation failed!')
-            return
+        else:
+            st.success(f'Simulation succeeded after {iterations} iterations.')
 
-        st.success(f'Simulation succeeded after {iterations} iterations.')
         st.subheader('Results')
+
         st.code(f'Initial Storage Energy = {round(initial_balance / 1_000_000_000_000, 2)} TWh')
 
         total_gas = sum(d.production.gas for d in collection_2030)
         _base_load_coverage = round(total_gas / 1_000_000_000_000, 2)
         _per_quarter = round(_base_load_coverage * 1_000 / collection_2030.get_length(), 2)
-        st.code(f'Required Base Load Coverage = {_base_load_coverage} TWh - {_per_quarter} GWh/quarter')
+        st.code(f'Required Base Load Coverage = {_base_load_coverage} TWh - {_per_quarter} GWh/quarter - Power: {_per_quarter * 4} GW')
 
         base_load_overshoot = total_gas / deficit
         st.code(f'Base Load Overproduction = {round(base_load_overshoot * 100, 2)} %')
-        st.code(f'Base Load Share (Consumption) = {round(total_gas / total_consumption * 100, 2)} %')
+
+        base_load_share = round(total_gas / total_consumption * 100, 2)
+
+        if base_load_share >= 30:
+            st.error(f'Base Load Share (Consumption) = {base_load_share} %', icon='⚠️')
+        elif base_load_share >= 20:
+            st.warning(f'Base Load Share (Consumption) = {base_load_share} %', icon='⚠️')
+        else:
+            st.code(f'Base Load Share (Consumption) = {base_load_share} %')
 
         remaining_storage = storage_balance[-1] * storage.H_TO_W
         st.code(f'Remaining Storage Energy = {round(remaining_storage / 1_000_000_000_000, 2)} TWh')
@@ -996,10 +981,10 @@ class MagicStorage:
     hydrogen: float = 0.0
     thread = None
 
-    W_TO_H = 39_000
-    H_TO_W = 33_000
+    W_TO_H = 52_000
+    H_TO_W = 21_000
 
-    STORAGE_CAP: int = Unit.kt(400)
+    STORAGE_CAP: int = Unit.kt(800)
 
     def __init__(self, initial_energy: float = 0.0):
         self.charge(initial_energy)
@@ -1046,7 +1031,7 @@ class MagicStorage:
 
         self.hydrogen += hydrogen
 
-        self.hydrogen = min(self.hydrogen, self.STORAGE_CAP)
+        # self.hydrogen = min(self.hydrogen, self.STORAGE_CAP)
 
     # def _electrolysis(self):
     #     # Wait until 39_000 of energy is available
