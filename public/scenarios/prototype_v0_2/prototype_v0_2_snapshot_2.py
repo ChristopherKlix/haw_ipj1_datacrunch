@@ -1,5 +1,4 @@
 import calendar
-import math
 import os
 import datetime as dt
 from threading import Event, Thread
@@ -19,7 +18,7 @@ from dtypes import Unit
 from data_manager.data_manager import Collections, Collection, Data, DataArray
 
 
-class Prototype_v0_2:
+class Prototype_v0_2_Snapshot_2:
     def __init__(self, view):
         self.view = view
         self.params = {}
@@ -29,8 +28,6 @@ class Prototype_v0_2:
             self.params['load'] = st.session_state.total_consumption_2030
             self.params['initial-storage'] = st.session_state.initial_storage
             self.params['iteration-limit'] = st.session_state.iteration_limit
-            self.params['storage-cap'] = Unit.kt(st.session_state.storage_cap)
-            self.params['skew-factor'] = st.session_state.skew_factor
         except:
             st.error('Could not parse parameters.')
             return
@@ -77,18 +74,7 @@ class Prototype_v0_2:
         INITIAL_BALANCE: int = Unit.TWh(self.params['initial-storage'])
         RESERVE_BALANCE: int = Unit.TWh(1)
 
-
-        # Debug
-        # st.debug(f'POWER_FACTOR_PV     : {POWER_FACTOR_PV}')
-        # st.debug(f'POWER_FACTOR_WINDOFF: {POWER_FACTOR_WINDOFF}')
-        # st.debug(f'POWER_FACTOR_WINDON : {POWER_FACTOR_WINDON}')
-        # st.debug(f'POWER_FACTOR_BIOMASS: {POWER_FACTOR_BIOMASS}')
-        # st.debug(f'POWER_FACTOR_HYDRO  : {POWER_FACTOR_HYDRO}')
-        # st.debug(f'LOAD_FACTOR         : {LOAD_FACTOR}')
-
-
-        # st.debug('Prototype_v0_2 works!')
-
+        st.warning('This is a SNAPSHOT version. Bugs are expected.')
 
         # ----------------------------------------
         # Create a Collection for the year 2030
@@ -183,20 +169,12 @@ class Prototype_v0_2:
         total_consumption = sum(d.consumption.load for d in collection_2030)
         deficit = abs(total_consumption - total_production)
 
-        st.code(f'Total Renewable Energy Production: {round(total_production / 1_000_000_000_000, 2)} TWh')
-        st.code(f'Total Energy Consumption: {round(total_consumption / 1_000_000_000_000, 2)} TWh')
-        st.code(f'Total Energy Deficit: {round(deficit / 1_000_000_000_000, 2)} TWh')
+        st.debug(f'Total Energy Production: {round(total_production / 1_000_000_000_000, 2)} TWh')
+        st.debug(f'Total Energy Consumption: {round(total_consumption / 1_000_000_000_000, 2)} TWh')
+        st.debug(f'Deficit: {round(deficit / 1_000_000_000_000, 2)} TWh')
 
         renewable_share = total_production / total_consumption
-        renewable_share = round(renewable_share * 100, 2)
-        renewable_share_icon = ''
-        if renewable_share >= 90:
-            renewable_share_icon = '✅'
-        elif renewable_share >= 80:
-            renewable_share_icon = '🟨'
-        else:
-            renewable_share_icon = '🔴'
-        st.code(f'Renewable Share (Consumption): {renewable_share} % {renewable_share_icon}')
+        st.debug(f'Renewable Share: {round(renewable_share * 100, 2)} %')
 
         for i, d in enumerate(collection_2030):
             _gas = deficit / collection_2030.get_length()
@@ -205,14 +183,16 @@ class Prototype_v0_2:
         # ----------------------------------------
         # Apply ramp factor
         # ----------------------------------------
-        SUMMER_FACTOR = self.params['skew-factor']
+        _summer_factor = 1.0
+        SUMMER_FACTOR = _summer_factor
         WINTER_FACTOR = 1.0
 
         x_W = lambda S, W, x_S: (1 - ((S/(S+W)) * x_S)) / (W/(S+W))
 
         WINTER_FACTOR = x_W(7, 5, SUMMER_FACTOR)
 
-        st.code(f'Skew Factors: Summer: {round(SUMMER_FACTOR, 2)} / Winter: {round(WINTER_FACTOR, 2)}')
+        # st.debug(f'Summer Factor: {SUMMER_FACTOR}')
+        # st.debug(f'Winter Factor: {WINTER_FACTOR}')
 
         ramp_factor = np.ones(collection_2030.get_length(), dtype=float)
 
@@ -268,21 +248,9 @@ class Prototype_v0_2:
             collection_2030.data[i].production.gas *= ramp_factor[i]
 
         recalculated_sum = sum(d.production.gas for d in collection_2030)
-        st.debug(f'Total Fossil Fuels after Skewing: {round(recalculated_sum / 1_000_000_000_000, 2)} TWh')
+        # st.debug(f'Recalculated Sum: {round(recalculated_sum / 1_000_000_000_000, 2)} TWh')
 
         st.success('Initial calculations completed!')
-
-        # # Create a start and end date
-        # # ! tzinfo does not work correctly with pytz
-        # start = dt.datetime(2030, 3, 31,  0,  0)
-        # end   = dt.datetime(2030, 3, 31, 23, 45)
-
-        # # Localize to Europe/Berlin
-        # start = timezone('Europe/Berlin').localize(start)
-        # end   = timezone('Europe/Berlin').localize(end)
-
-        # # Get the data for the given date range
-        # _test = collection_2030.get_range(start, end)
 
         # ----------------------------------------
         # Calculate the balance
@@ -317,10 +285,7 @@ class Prototype_v0_2:
                 # ----------------------------------------
                 # Setup storage
                 # ----------------------------------------
-                storage = MagicStorage(
-                    initial_energy=INITIAL_BALANCE,
-                    storage_cap=self.params['storage-cap']
-                )
+                storage = MagicStorage(initial_energy=INITIAL_BALANCE)
                 # storage.start_electrolysis()
 
                 # ----------------------------------------
@@ -439,33 +404,8 @@ class Prototype_v0_2:
         st.code(f'Largest Charge = {round(largest_charge / 1_000_000_000, 2)} GWh - {round(largest_charge_power / 1_000_000_000, 2)} GW')
         st.code(f'Largest Discharge = {round(largest_discharge / 1_000_000_000, 2)} GWh - {round(largest_discharge_power / 1_000_000_000, 2)} GW')
 
-        total_increase = [diff for diff in differences if diff >= 0]
-        total_increase = sum(total_increase)
-
-        st.code(f'Total Hydrogen Required = {round(total_increase / 1_000_000, 2)} kt')
-
-        storage_full_share: int = 0
-
-        for i, d in enumerate(storage_balance):
-            if d >= self.params['storage-cap'] * 0.99:
-                storage_full_share += 1
-
-        storage_full_share = round(storage_full_share / storage_balance.size * 100, 2)
-
-        st.code(f'Storage is filled: {storage_full_share} % of the year')
-
-        # ----------------------------------------
-        # Calculate Gas Turbines
-        # ----------------------------------------
-
-        turbine_count: int = 0
-
-        power_per_turbine: int = Unit.MW(1680)
-        _turbine_count: float = abs(largest_discharge_power) / power_per_turbine
-        turbine_count = math.ceil(_turbine_count)
-
-        st.code(f'Required H2 Gas Turbine Installations: {turbine_count}')
-        st.code(f'Approx. Number of H2-Ready Power Plants: {round(turbine_count / 3)}')
+        total_hydrogen_required = np.trapz(storage_balance)
+        st.code(f'Total Hydrogen Required = {round(total_hydrogen_required / 1_000_000_000_000, 2)} Gt')
 
 
         # ----------------------------------------
@@ -586,10 +526,7 @@ class Prototype_v0_2:
             ).resolve_scale(
                 y='independent'
             ).properties(
-                height=500,
                 title='Erzeugung und Gesamtverbrauch'
-            ).configure_legend(
-                orient='bottom'  # Position the legend underneath the chart
             ),
             use_container_width=True,
         )
@@ -622,7 +559,7 @@ class Prototype_v0_2:
                 y=alt.Y(
                     'Energy Value:Q',
                     axis=alt.Axis(title=f'Hydrogen [kt]'),
-                    scale=alt.Scale(domain=[0, self.params['storage-cap'] / 1_000_000])
+                    # scale=alt.Scale(domain=[0, 100])
                 ),
                 color=alt.Color(
                     'Energy_Source:N',
@@ -639,10 +576,7 @@ class Prototype_v0_2:
                     sort='ascending'
                 ),
             ).properties(
-                height=500,
                 title='Wasserstoff Speicher Gesamtenergie'
-            ).configure_legend(
-                orient='bottom'  # Position the legend underneath the chart
             ),
             use_container_width=True,
         )
@@ -811,7 +745,7 @@ class Prototype_v0_2:
                 y=alt.Y(
                     'Energy Value:Q',
                     axis=alt.Axis(title=f'Hydrogen [kt]'),
-                    scale=alt.Scale(domain=[0, self.params['storage-cap'] / 1_000_000])
+                    scale=alt.Scale(domain=[0, 400])
                 ),
                 color=alt.Color(
                     'Energy_Source:N',
@@ -1016,7 +950,7 @@ class Prototype_v0_2:
                 y=alt.Y(
                     'Energy Value:Q',
                     axis=alt.Axis(title=f'Hydrogen [kt]'),
-                    scale=alt.Scale(domain=[0, self.params['storage-cap'] / 1_000_000])
+                    scale=alt.Scale(domain=[0, 400])
                 ),
                 color=alt.Color(
                     'Energy_Source:N',
@@ -1049,14 +983,11 @@ class MagicStorage:
 
     W_TO_H = 52_000
     H_TO_W = 21_000
-    # W_TO_H = 39_000
-    # H_TO_W = 33_000
 
-    STORAGE_CAP: int = Unit.kt(600)
+    STORAGE_CAP: int = Unit.kt(800)
 
-    def __init__(self, initial_energy: float = 0.0, storage_cap: float = Unit.kt(600)):
+    def __init__(self, initial_energy: float = 0.0):
         self.charge(initial_energy)
-        self.STORAGE_CAP = storage_cap
 
     def start_electrolysis(self):
         self.thread = self.Electrolysis(self)
@@ -1100,7 +1031,7 @@ class MagicStorage:
 
         self.hydrogen += hydrogen
 
-        self.hydrogen = min(self.hydrogen, self.STORAGE_CAP)
+        # self.hydrogen = min(self.hydrogen, self.STORAGE_CAP)
 
     # def _electrolysis(self):
     #     # Wait until 39_000 of energy is available

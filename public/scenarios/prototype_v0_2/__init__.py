@@ -1,3 +1,5 @@
 # prototype_v0_2/__init__.py
 
 from .prototype_v0_2 import Prototype_v0_2
+from .prototype_v0_2_snapshot_1 import Prototype_v0_2_Snapshot_1
+from .prototype_v0_2_snapshot_2 import Prototype_v0_2_Snapshot_2

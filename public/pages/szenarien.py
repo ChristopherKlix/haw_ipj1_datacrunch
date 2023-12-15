@@ -5,6 +5,8 @@ from dtypes import View, URLImage
 
 from scenarios.prototype_v0_1 import Prototype_v0_1
 from scenarios.prototype_v0_2 import Prototype_v0_2
+from scenarios.prototype_v0_2 import Prototype_v0_2_Snapshot_1
+from scenarios.prototype_v0_2 import Prototype_v0_2_Snapshot_2
 
 class Szenarien_View:
     def __init__(self):
@@ -46,6 +48,10 @@ class Szenarien_View:
             self.simulate_prototype_v0_1()
         elif st.session_state.scenario == 'prototype-v0.2':
             self.simulate_prototype_v0_2()
+        elif st.session_state.scenario == 'prototype-v0.2-snapshot-1':
+            self.simulate_prototype_v0_2_snapshot_1()
+        elif st.session_state.scenario == 'prototype-v0.2-snapshot-2':
+            self.simulate_prototype_v0_2_snapshot_2()
 
     def on_simulate_btn_pressed(self):
         print('Simulate')
@@ -63,6 +69,8 @@ class Szenarien_View:
         self.scenarios = {
             'prototype-v0.1': 'Prototyp v0.1',
             'prototype-v0.2': 'Prototyp v0.2',
+            'prototype-v0.2-snapshot-1': 'prototype-v0.2-SNAPSHOT-1',
+            'prototype-v0.2-snapshot-2': 'prototype-v0.2-SNAPSHOT-2',
             'default': "📊 Referenz Szenario (empfohlen)",
             'best-case': "☀️ Szenario \"Best Case\"",
             'worst-case': "🌧️ Szenario \"Worst Case\"",
@@ -148,6 +156,27 @@ class Szenarien_View:
                 st.caption('''
                            Die Parameter können im Abschnitt "Szenario Parameter" angepasst werden.
                             ''')
+            elif param_scenario == self.scenarios.get('prototype-v0.2'):
+                st.markdown('''
+                            Der Prototyp v0.2 ermöglicht eine genauere Simulation der Produktion,
+                            des Verbrauchs und der Speicher des Jahres 2030.
+                            Als Speichertechnologie wird eine Hybrid-Lösung simuliert,
+                            welche Batteriespeicher nutzt als Kurzzeitspeicher für
+                            die Wasserstoffelektrolyse.
+                            ''')
+                st.caption('''
+                           Die Parameter können im Abschnitt "Szenario Parameter" angepasst werden.
+                            ''')
+            elif param_scenario == self.scenarios.get('prototype-v0.2-snapshot-1'):
+                st.warning('This is a SNAPSHOT version.')
+                st.caption('''
+                           Die Parameter können im Abschnitt "Szenario Parameter" angepasst werden.
+                            ''')
+            elif param_scenario == self.scenarios.get('prototype-v0.2-snapshot-2'):
+                st.warning('This is a SNAPSHOT version.')
+                st.caption('''
+                           Die Parameter können im Abschnitt "Szenario Parameter" angepasst werden.
+                            ''')
 
             # ---------------
             # ! Simulation Button
@@ -170,6 +199,10 @@ class Szenarien_View:
             self.render_prototype_v0_1_view()
         elif param_scenario == self.scenarios.get('prototype-v0.2'):
             self.render_prototype_v0_2_view()
+        elif param_scenario == self.scenarios.get('prototype-v0.2-snapshot-1'):
+            self.render_prototype_v0_2_snapshot_1_view()
+        elif param_scenario == self.scenarios.get('prototype-v0.2-snapshot-2'):
+            self.render_prototype_v0_2_snapshot_2_view()
 
         # ---------------
         # ! Footer
@@ -639,24 +672,29 @@ class Szenarien_View:
 
         with cols_params_row0[0]:
             container_consumption = st.container()
+            st.divider()
+            container_inital_storage = st.container()
 
         with cols_params_row0[1]:
             container_reference_year = st.container()
+            st.divider()
+            container_simulation_limit = st.container()
+            st.divider()
+            container_skew_factor = st.container()
 
         with container_consumption:
             st.markdown('#### 🔌 Stromverbrauch')
 
             st.markdown('''
-                        Die Erzeugungseffizienz gibt an, wie viel Prozent der installierten Leistung tatsächlich erzeugt wird.
-                        Dieser Wert kann je nach Wetterbedingungen variieren.
-                        Die Simulation berechnet einen erwarten Wert für das Jahr 2030.
-                        Mit den Slidern kann dieser Wert prozentual nach oben oder unten angepasst werden.
+                        Der Stromverbrauch gibt an, wie viel Strom im Jahr 2030 gesamt verbraucht wird.
+                        Dies beinhaltet Netzverluste und Verbrauch der Kraftwerke.
+                        Nicht beinhaltet sind Importe und Exporte.
                         ''')
             with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
                 st.caption('''
-                        Die Effizienz ist ein Kennwert, welcher in der Simulation eine Vielzahl von Faktoren berücksichtigt.
-                        So beeinflusst der Faktor die simulierte Wetterbedingungen, die Anzahl der Sonnenstunden, die Anzahl der Windstunden, die Anzahl der Wolkenstunden, etc.
-                        Daher dient dieser Wert als Prozentuale Angabe, mit Abweichung vom simulierten wahrscheinlichen Referenzjahr in 2030.
+                        Bei dem Stromverbrauch handelt es sich um eine proportionale Skalierung
+                        der Verbrauchsprofile aus dem Referenzjahr, welches ebenfalls als Parameter
+                        festgelegt werden kann.
                         ''')
 
             st.selectbox(
@@ -673,9 +711,136 @@ class Szenarien_View:
                     label="Gesamter Stromverbrauch [TWh]",
                     min_value=0,
                     max_value=1_000,
-                    value=750,
+                    value=650,
                     step=10
                 )
+
+        with container_inital_storage:
+            st.markdown('#### 🔋 Speicher')
+
+            st.markdown('''
+                        Generell soll ein Speichersystem die Überproduktion erneuerbarer Energien
+                        über das Jahr hinweg verteilen. Das vorgesehene Speichersystem
+                        ist wie folgt strukturiert: Die Überschussproduktion wird zunächst
+                        in einen vorgeschalteten idealen Batteriespeicher eingespeist.
+                        Daraufhin erfolgt eine Wasserstoffelektrolyse, gefolgt von der
+                        Speicherung des erzeugten Wasserstoffs in Kilogramm.
+                        Bei Bedarf an Strom aus dem Speicher wird der Wasserstoff mithilfe
+                        von Gasturbinen in elektrische Energie umgewandelt.
+                        Anschließend wird diese Energie wieder in den idealen Batteriespeicher
+                        und zurück ins Netz eingespeist.
+                        Der Batteriespeicher dient dazu, schnell (< 15 Minuten)
+                        auf kurzfristige Netzänderungen zu reagieren und
+                        die An- und Abfahrtszeiten der Turbinen und Elektrolyse auszugleichen.
+                        ''')
+            with st.expander(label="Wie beeinflussen diese Parameter die Simulation?"):
+                st.caption('''
+                        Die Beschränkung der zu speichernden Wasserstoffmenge resultiert
+                           in einer optimaleren Nutzung des Speichervolumens,
+                           führt jedoch gleichzeitig zu einer Erhöhung der Grundlast,
+                           da Teile der Überproduktion nunmehr nur noch exportiert werden können.
+                           Durch das Ansetzen eines bereits teilweise gefüllten
+                           Speichers kann die Grundlast effektiv reduziert werden.
+                           Konsequenterweise bedarf es am Ende des Jahres der Rückgabe dieses "Speicherkredits".
+                        ''')
+
+
+            st.markdown('<h5>Initialer Speicher</h5>', unsafe_allow_html=True)
+            st.markdown('''
+                    Der Initiale Speicher simuliert eine Speicherung
+                    an Wasserstoff aus dem Vorjahr (2029).
+                    ''')
+            st.markdown('''
+                    Zu Beginn der Simulation wird die Menge an TWh dem Speicher
+                    für die Elektrolyse zur Verfügung gestellt,
+                    welcher aus dieser Energiemenge eine Zahl
+                    an Kilotonnen Wasserstoff produziert und speichert.
+                    Zum Ende des Jahres muss dieser Speicher mindestens wieder
+                    gefülllt sein, damit die Simulation
+                    erfolgreich ist.
+                    ''')
+
+            with st.columns(2, gap='medium')[0]:
+                st.session_state.initial_storage = st.number_input(
+                    label="Initialer Speicher [TWh]",
+                    min_value=0,
+                    max_value=100,
+                    value=10,
+                    step=1
+                )
+
+            st.markdown('<h5>Speicher Kapazität</h5>', unsafe_allow_html=True)
+            st.markdown('''
+                        Die Speicherkapazität definiert die maximale Menge an Wasserstoff,
+                        die gespeichert werden kann, unter Berücksichtigung
+                        potenzieller Ausbaukapazitäten. Diese Begrenzung zielt darauf ab,
+                        die vorhandenen Speicherressourcen effizienter zu nutzen
+                        und eine breitere Nutzung des Speichers zu ermöglichen.
+                        ''')
+
+            with st.columns(2, gap='medium')[0]:
+                st.session_state.storage_cap = st.number_input(
+                    label="Speicher Kapazität [kt]",
+                    min_value=0,
+                    max_value=2000,
+                    value=800,
+                    step=100
+                )
+
+            st.markdown('<h5>H2 Turbinen-Technologie</h5>', unsafe_allow_html=True)
+            st.markdown('''
+                        Die Wasserstoffspeicher speisen den gespeicherten Wasserstoff über Pipelines
+                        in die Gaskraftwerke ein. Die Kraftwerke nutzen hybride Gasturbinen,
+                        welche von Erdgas auf Wasserstoff wechseln können und ebenfalls
+                        mit Mischgas laufen können.
+                        ''')
+            st.markdown('''
+                        Die Simulation nutzt eine virtuelle Gasturbine von General Electric,
+                        die 9HA.02 in 2x1 CC Konfiguration mit einer Leistung von 1680 MW.
+                        Pro Stunde werden dabei 77,712 Tonnen an Wasserstoff verbrannt.
+                        ''')
+            st.markdown('''
+                        Diese Turbinen können übergangslos von Erdgas auf 100% Wasserstoff
+                        wechseln. Nach eigener Aussage von General Electric können
+                        die H2-Ready Turbinen innerhalb von 5min von Stillstand
+                        auf 100% Leistung hochfahren.
+                        Die Neuinstallation einer solcher Anlage kann innerhalb
+                        von nur 2 Wochen erfolgen.
+                        ''')
+            st.markdown('''
+                        Quelle: <a href="https://www.ge.com/gas-power/products/gas-turbines">https://www.ge.com/gas-power/products/gas-turbines</a>
+                        ''',
+                        unsafe_allow_html=True)
+
+            with st.expander('Wie genau funktioniert die 9HA.02 in 2x1 CC Konfiguration?'):
+                View.image(
+                    URLImage(
+                        url='https://www.ge.com/content/dam/gepower-new/global/en_US/images/gas-new-site/products/gas-turbines/9ha/hero-9ha-gas-turbine.png',
+                        alt='https://www.ge.com/gas-power/products/gas-turbines'
+                    )
+                )
+                st.markdown('''
+                            The General Electric 9HA.02 gas turbine is a high-efficiency, heavy-duty turbine used in combined cycle power plants. In a 2x1 combined cycle (CC) configuration, two gas turbines are combined with one steam turbine. Here's a basic explanation of how this configuration works:
+
+                            1. **Gas Turbines (2 units - 9HA.02):**
+                            - The two GE 9HA.02 gas turbines operate in parallel to generate electricity. They burn natural gas or another fuel to produce high-temperature exhaust gases.
+
+                            2. **Heat Recovery Steam Generators (HRSGs - 2 units):**
+                            - The hot exhaust gases from each 9HA.02 gas turbine pass through a Heat Recovery Steam Generator (HRSG). The HRSG extracts heat from the exhaust gases to generate steam.
+
+                            3. **Steam Turbine (1 unit):**
+                            - The steam generated in the HRSGs is directed to a steam turbine. The steam turbine converts the thermal energy of the steam into additional mechanical power, which is used to generate more electricity.
+
+                            4. **Combined Cycle Operation:**
+                            - The combination of gas turbine and steam turbine operation in a 2x1 configuration maximizes the overall efficiency of the power plant. The exhaust heat from the gas turbines, which would otherwise be wasted, is utilized to generate additional electricity through the steam turbine.
+
+                            The 2x1 CC configuration is a common design for large-scale combined cycle power plants, offering high efficiency and improved overall performance compared to single-cycle configurations.
+
+                            For more detailed and specific information about the GE 9HA.02 gas turbine in a 2x1 CC configuration, you may want to refer to GE's technical documentation, performance specifications, or contact GE's technical support for the most accurate and up-to-date details.
+                            ''')
+
+            with st.expander('Wieso wird die General Electric Turbine für die Simulation genutzt?'):
+                st.todo()
 
         with container_reference_year:
             st.markdown('''
@@ -683,38 +848,324 @@ class Szenarien_View:
                         ''')
 
             st.markdown('''
-                    Die Erzeugungseffizienz gibt an, wie viel Prozent der installierten Leistung tatsächlich erzeugt wird.
-                    Dieser Wert kann je nach Wetterbedingungen variieren.
-                    Die Simulation berechnet einen erwarten Wert für das Jahr 2030.
-                    Mit den Slidern kann dieser Wert prozentual nach oben oder unten angepasst werden.
-                    ''')
+                        Der Parameter "Referenzjahr" ermöglicht die Auswahl eines Jahres
+                        im Zeitraum von 2015 bis 2022. Er bezieht sich auf
+                        reale historische Daten zur Stromproduktion und -verbrauch.
+                        Diese dienen als Referenzgrundlage zur Erstellung einer Prognose bzw.
+                        Hochrechnung bezüglich der zukünftigen Produktion und des Verbrauchs.
+                        ''')
             with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
                 st.caption('''
-                        Die Effizienz ist ein Kennwert, welcher in der Simulation eine Vielzahl von Faktoren berücksichtigt.
-                        So beeinflusst der Faktor die simulierte Wetterbedingungen, die Anzahl der Sonnenstunden, die Anzahl der Windstunden, die Anzahl der Wolkenstunden, etc.
-                        Daher dient dieser Wert als Prozentuale Angabe, mit Abweichung vom simulierten wahrscheinlichen Referenzjahr in 2030.
-                        ''')
+                            Durch die Anwendung des Parameters "Gesamtverbrauch 2023" in Verbindung
+                           mit dem tatsächlichen Gesamtverbrauch aus dem Referenzjahr wird ein
+                           Skalierungsfaktor ermittelt. Dieser Faktor ermöglicht die Hochskalierung
+                           des aktuellen Verbrauchs des Referenzjahres auf das Jahr 2030.
+                           Parallel dazu wird unter Berücksichtigung der Ausbauziele für die
+                           installierte Leistung im Jahr 2030 und der installierten Leistung
+                           des Referenzjahres ein weiterer Skalierungsfaktor erstellt.
+                           Dieser wird auf die Erzeugungswerte der erneuerbaren Energien angewendet.
+                           ''')
 
             st.session_state.reference_year = st.selectbox(
                 label='Referenzjahr',
                 options=[*range(2015, 2023)],
-                index=5,
+                index=6,
                 help="Das Referenzjahr wird als Basis für die Simulation verwendet."
             )
 
-            st.markdown(
-                '''
-                ##### Jahr mit höchster Produktion: 2020
+        with container_simulation_limit:
+            st.markdown('#### ❌ Simulationsiterationen')
 
-                In diesem Jahr wurde verhältnismäßig am meisten Strom durch erneuerbare Energien erzeugt.
-                Dies korrelliert mit den Wetterbedingungen, welche in diesem Jahr besonders gut waren.
+            st.todo('''
+                        Der Initiale Speicher simuliert einen idealen Energiespeicher,
+                        welcher bei Bedarf mit unendlicher Leistung Energie bereitstellen kann.
+                        Dieser Speicher kann nicht geladen werden.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.todo()
 
-                ##### Jahr mit niedrigster Produktion: 2021
+            with st.columns(2, gap='medium')[0]:
+                st.session_state.iteration_limit = st.number_input(
+                    label="Iterationslimit",
+                    min_value=1,
+                    max_value=400,
+                    value=200,
+                    step=1
+                )
 
-                In diesem Jahr wurde verhältnismäßig am wenigsten Strom durch erneuerbare Energien erzeugt.
-                Dies korrelliert mit den Wetterbedingungen, welche in diesem Jahr besonders schlecht waren.
-                '''
+            with container_skew_factor:
+                st.markdown('#### 📈 Skew Factor')
+
+                st.markdown('''
+                            Der Skew-Faktor ermöglicht eine effiziente Verteilung der Grundlast,
+                            wodurch eine Reduzierung während ertragreicher Sommermonate
+                            und eine Erhöhung in den winterlichen Perioden realisiert werden kann.
+                            Dabei bleibt die Gesamtgrundlast unverändert.
+                            ''')
+
+                with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                    st.todo()
+
+                with st.columns(2, gap='medium')[0]:
+                    st.session_state.skew_factor = st.number_input(
+                        label="Sommer Faktor",
+                        min_value=0.1,
+                        max_value=2.0,
+                        value=0.5,
+                        step=0.1
+                    )
+
+                if st.session_state.skew_factor:
+                    SUMMER_FACTOR = st.session_state.skew_factor
+                    WINTER_FACTOR = 1.0
+
+                    x_W = lambda S, W, x_S: (1 - ((S/(S+W)) * x_S)) / (W/(S+W))
+
+                    WINTER_FACTOR = x_W(7, 5, SUMMER_FACTOR)
+
+                with (cols := st.columns(2, gap='medium'))[0]:
+                        st.code(f'Sommer Faktor: {round(SUMMER_FACTOR, 2)}')
+                with cols[1]:
+                        st.code(f'Winter Faktor: {round(WINTER_FACTOR, 2)}')
+
+    def render_prototype_v0_2_snapshot_1_view(self):
+        st.session_state.total_consumption_2030 = None
+        st.session_state.reference_year         = None
+
+        st.divider()
+
+        st.markdown('#### ⚙️ Szenario Parameter')
+        st.markdown('''
+                    Hier können die Parameter für das benutzerdefinierte Szenario angepasst werden.
+                    ''')
+
+        cols_params_row0 = st.columns(2, gap='medium')
+
+        with cols_params_row0[0]:
+            container_consumption = st.container()
+            container_inital_storage = st.container()
+
+        with cols_params_row0[1]:
+            container_reference_year = st.container()
+            container_simulation_limit = st.container()
+
+        with container_consumption:
+            st.markdown('#### 🔌 Stromverbrauch')
+
+            st.markdown('''
+                        Der Stromverbrauch gibt an, wie viel Strom im Jahr 2030 gesamt verbraucht wird.
+                        Dies beinhaltet Netzverluste und Verbrauch der Kraftwerke.
+                        Nicht beinhaltet sind Importe und Exporte.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.caption('''
+                        Bei dem Stromverbrauch handelt es sich um eine proportionale Skalierung
+                        der Verbrauchsprofile aus dem Referenzjahr, welches ebenfalls als Parameter
+                        festgelegt werden kann.
+                        ''')
+
+            st.selectbox(
+                label="Berechnungsgrundlage",
+                options=[
+                    "Gesamter Stromverbrauch (pauschal)",
+                ],
             )
+
+            cols_consumption_simple = st.columns(2, gap='medium')
+
+            with cols_consumption_simple[0]:
+                st.session_state.total_consumption_2030 = st.number_input(
+                    label="Gesamter Stromverbrauch [TWh]",
+                    min_value=0,
+                    max_value=1_000,
+                    value=650,
+                    step=10
+                )
+
+        with container_inital_storage:
+            st.markdown('#### 🔋 Initialer Speicher')
+
+            st.markdown('''
+                        Der Initiale Speicher simuliert einen idealen Energiespeicher,
+                        welcher bei Bedarf mit unendlicher Leistung Energie bereitstellen kann.
+                        Dieser Speicher kann nicht geladen werden.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.caption('''
+                        Der Initiale Speicher ermöglicht der Simulation in Defizitphasen
+                        Strom aus dem Speicher zu beziehen.
+                        Nicht berechnet werden Wirkungsgerade oder realistische Speichermedien.
+                        Der Strom wird sofort aus dem Speicher bezogen
+                        und der Speicher hat keine Verluste über längere Zeit.
+                        ''')
+
+            cols_initial_storage_simple = st.columns(2, gap='medium')
+
+            with cols_initial_storage_simple[0]:
+                st.session_state.initial_storage = st.number_input(
+                    label="Initialer Speicher [TWh]",
+                    min_value=0,
+                    max_value=100,
+                    value=10,
+                    step=1
+                )
+
+        with container_reference_year:
+            st.markdown('''
+                        #### 📅 Referenzjahr
+                        ''')
+
+            st.todo()
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                # st.caption()
+                st.todo()
+
+            st.session_state.reference_year = st.selectbox(
+                label='Referenzjahr',
+                options=[*range(2015, 2023)],
+                index=6,
+                help="Das Referenzjahr wird als Basis für die Simulation verwendet."
+            )
+
+        with container_simulation_limit:
+            st.markdown('#### ❌ Simulationsiterationen')
+
+            st.todo('''
+                        Der Initiale Speicher simuliert einen idealen Energiespeicher,
+                        welcher bei Bedarf mit unendlicher Leistung Energie bereitstellen kann.
+                        Dieser Speicher kann nicht geladen werden.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.todo()
+
+            with st.columns(2, gap='medium')[0]:
+                st.session_state.iteration_limit = st.number_input(
+                    label="Iterationslimit",
+                    min_value=1,
+                    max_value=400,
+                    value=200,
+                    step=1
+                )
+
+    def render_prototype_v0_2_snapshot_2_view(self):
+        st.session_state.total_consumption_2030 = None
+        st.session_state.reference_year         = None
+
+        st.divider()
+
+        st.markdown('#### ⚙️ Szenario Parameter')
+        st.markdown('''
+                    Hier können die Parameter für das benutzerdefinierte Szenario angepasst werden.
+                    ''')
+
+        cols_params_row0 = st.columns(2, gap='medium')
+
+        with cols_params_row0[0]:
+            container_consumption = st.container()
+            container_inital_storage = st.container()
+
+        with cols_params_row0[1]:
+            container_reference_year = st.container()
+            container_simulation_limit = st.container()
+
+        with container_consumption:
+            st.markdown('#### 🔌 Stromverbrauch')
+
+            st.markdown('''
+                        Der Stromverbrauch gibt an, wie viel Strom im Jahr 2030 gesamt verbraucht wird.
+                        Dies beinhaltet Netzverluste und Verbrauch der Kraftwerke.
+                        Nicht beinhaltet sind Importe und Exporte.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.caption('''
+                        Bei dem Stromverbrauch handelt es sich um eine proportionale Skalierung
+                        der Verbrauchsprofile aus dem Referenzjahr, welches ebenfalls als Parameter
+                        festgelegt werden kann.
+                        ''')
+
+            st.selectbox(
+                label="Berechnungsgrundlage",
+                options=[
+                    "Gesamter Stromverbrauch (pauschal)",
+                ],
+            )
+
+            cols_consumption_simple = st.columns(2, gap='medium')
+
+            with cols_consumption_simple[0]:
+                st.session_state.total_consumption_2030 = st.number_input(
+                    label="Gesamter Stromverbrauch [TWh]",
+                    min_value=0,
+                    max_value=1_000,
+                    value=650,
+                    step=10
+                )
+
+        with container_inital_storage:
+            st.markdown('#### 🔋 Initialer Speicher')
+
+            st.markdown('''
+                        Der Initiale Speicher simuliert einen idealen Energiespeicher,
+                        welcher bei Bedarf mit unendlicher Leistung Energie bereitstellen kann.
+                        Dieser Speicher kann nicht geladen werden.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.caption('''
+                        Der Initiale Speicher ermöglicht der Simulation in Defizitphasen
+                        Strom aus dem Speicher zu beziehen.
+                        Nicht berechnet werden Wirkungsgerade oder realistische Speichermedien.
+                        Der Strom wird sofort aus dem Speicher bezogen
+                        und der Speicher hat keine Verluste über längere Zeit.
+                        ''')
+
+            cols_initial_storage_simple = st.columns(2, gap='medium')
+
+            with cols_initial_storage_simple[0]:
+                st.session_state.initial_storage = st.number_input(
+                    label="Initialer Speicher [TWh]",
+                    min_value=0,
+                    max_value=100,
+                    value=10,
+                    step=1
+                )
+
+        with container_reference_year:
+            st.markdown('''
+                        #### 📅 Referenzjahr
+                        ''')
+
+            st.todo()
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                # st.caption()
+                st.todo()
+
+            st.session_state.reference_year = st.selectbox(
+                label='Referenzjahr',
+                options=[*range(2015, 2023)],
+                index=6,
+                help="Das Referenzjahr wird als Basis für die Simulation verwendet."
+            )
+
+        with container_simulation_limit:
+            st.markdown('#### ❌ Simulationsiterationen')
+
+            st.todo('''
+                        Der Initiale Speicher simuliert einen idealen Energiespeicher,
+                        welcher bei Bedarf mit unendlicher Leistung Energie bereitstellen kann.
+                        Dieser Speicher kann nicht geladen werden.
+                        ''')
+            with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
+                st.todo()
+
+            with st.columns(2, gap='medium')[0]:
+                st.session_state.iteration_limit = st.number_input(
+                    label="Iterationslimit",
+                    min_value=1,
+                    max_value=400,
+                    value=200,
+                    step=1
+                )
+
 
     # ---------------
     # ! Simulations
@@ -725,6 +1176,14 @@ class Szenarien_View:
 
     def simulate_prototype_v0_2(self):
         prototype = Prototype_v0_2(self)
+        prototype.simulate()
+
+    def simulate_prototype_v0_2_snapshot_1(self):
+        prototype = Prototype_v0_2_Snapshot_1(self)
+        prototype.simulate()
+
+    def simulate_prototype_v0_2_snapshot_2(self):
+        prototype = Prototype_v0_2_Snapshot_2(self)
         prototype.simulate()
 
 
