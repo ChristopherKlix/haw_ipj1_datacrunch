@@ -4,6 +4,14 @@ header[data-testid="stHeader"] {
     background: linear-gradient(to bottom, white, transparent);
 }
 
+iframe {
+    display: none;
+}
+
+h5 {
+    margin-top: 1rem;
+}
+
 #navbar {
     position: fixed;
     display: flex;
