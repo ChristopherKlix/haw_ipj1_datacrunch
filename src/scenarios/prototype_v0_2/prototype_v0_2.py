@@ -690,8 +690,8 @@ class Prototype_v0_2:
             tz='Europe/Berlin'
         )
 
-        st.debug(f'Data: {selected_data.size}')
-        st.debug(f'Range: {len(date_range_day)}')
+        # st.debug(f'Data: {selected_data.size}')
+        # st.debug(f'Range: {len(date_range_day)}')
 
         plot_day_production_df = pd.DataFrame({
             'Date': date_range_day,
@@ -787,7 +787,7 @@ class Prototype_v0_2:
         end_index = (selected_data[-1].start - timezone('Europe/Berlin').localize(dt.datetime(2030, 1, 1, 0, 0))).total_seconds() / (60 * 15)
         end_index = round(end_index)
 
-        st.debug(f'Storage: {np.copy(storage_balance)[start_index:end_index+1].size}')
+        # st.debug(f'Storage: {np.copy(storage_balance)[start_index:end_index+1].size}')
 
         plot_day_storage_df = pd.DataFrame({
             'Date': date_range_day,
@@ -895,8 +895,8 @@ class Prototype_v0_2:
             tz='Europe/Berlin'
         )
 
-        st.debug(f'Data: {selected_data.size}')
-        st.debug(f'Range: {len(date_range_day)}')
+        # st.debug(f'Data: {selected_data.size}')
+        # st.debug(f'Range: {len(date_range_day)}')
 
         plot_day_production_df = pd.DataFrame({
             'Date': date_range_day,
@@ -992,7 +992,7 @@ class Prototype_v0_2:
         end_index = (selected_data[-1].start - timezone('Europe/Berlin').localize(dt.datetime(2030, 1, 1, 0, 0))).total_seconds() / (60 * 15)
         end_index = round(end_index)
 
-        st.debug(f'Storage: {np.copy(storage_balance)[start_index:end_index+1].size}')
+        # st.debug(f'Storage: {np.copy(storage_balance)[start_index:end_index+1].size}')
 
         plot_day_storage_df = pd.DataFrame({
             'Date': date_range_day,
