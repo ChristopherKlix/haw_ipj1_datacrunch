@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd
+import altair as alt
 import streamlit as st
 
 from init_page import PageManager
@@ -68,13 +71,13 @@ class Szenarien_View:
 
         self.scenarios = {
             'prototype-v0.1': 'Prototyp v0.1',
-            'prototype-v0.2': 'Prototyp v0.2',
             'prototype-v0.2-snapshot-1': 'prototype-v0.2-SNAPSHOT-1',
             'prototype-v0.2-snapshot-2': 'prototype-v0.2-SNAPSHOT-2',
-            'default': "📊 Referenz Szenario (empfohlen)",
-            'best-case': "☀️ Szenario \"Best Case\"",
-            'worst-case': "🌧️ Szenario \"Worst Case\"",
-            'custom': "⚙️ Benuzterdefiniertes Szenario"
+            'prototype-v0.2': 'Prototyp v0.2',
+            # 'default': "📊 Referenz Szenario (empfohlen)",
+            # 'best-case': "☀️ Szenario \"Best Case\"",
+            # 'worst-case': "🌧️ Szenario \"Worst Case\"",
+            # 'custom': "⚙️ Benuzterdefiniertes Szenario"
         }
 
 
@@ -111,9 +114,9 @@ class Szenarien_View:
                 st.markdown('#### Szenario auswählen')
 
                 param_scenario = st.selectbox(
-                    label="Szenario",
+                    label="Simulation",
                     options=self.scenarios.values(),
-                    index=1,
+                    index=3,
                     key='scenario-selection',
                 )
 
@@ -674,6 +677,8 @@ class Szenarien_View:
             container_consumption = st.container()
             st.divider()
             container_inital_storage = st.container()
+            st.divider()
+            container_hydrogen_turbine = st.container()
 
         with cols_params_row0[1]:
             container_reference_year = st.container()
@@ -787,7 +792,9 @@ class Szenarien_View:
                     step=100
                 )
 
-            st.markdown('<h5>H2 Turbinen-Technologie</h5>', unsafe_allow_html=True)
+        with container_hydrogen_turbine:
+            st.markdown('#### ⚡ H2 Turbinen-Technologie')
+
             st.markdown('''
                         Die Wasserstoffspeicher speisen den gespeicherten Wasserstoff über Pipelines
                         in die Gaskraftwerke ein. Die Kraftwerke nutzen hybride Gasturbinen,
@@ -856,7 +863,7 @@ class Szenarien_View:
                         ''')
             with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
                 st.caption('''
-                            Durch die Anwendung des Parameters "Gesamtverbrauch 2023" in Verbindung
+                            Durch die Anwendung des Parameters "Gesamtverbrauch 2030" in Verbindung
                            mit dem tatsächlichen Gesamtverbrauch aus dem Referenzjahr wird ein
                            Skalierungsfaktor ermittelt. Dieser Faktor ermöglicht die Hochskalierung
                            des aktuellen Verbrauchs des Referenzjahres auf das Jahr 2030.
@@ -900,7 +907,7 @@ class Szenarien_View:
                             Der Skew-Faktor ermöglicht eine effiziente Verteilung der Grundlast,
                             wodurch eine Reduzierung während ertragreicher Sommermonate
                             und eine Erhöhung in den winterlichen Perioden realisiert werden kann.
-                            Dabei bleibt die Gesamtgrundlast unverändert.
+                            Dabei bleibt die Gesamtgrundlastdeckung unverändert.
                             ''')
 
                 with st.expander(label="Wie beeinflusst dieser Parameter die Simulation?"):
@@ -923,10 +930,50 @@ class Szenarien_View:
 
                     WINTER_FACTOR = x_W(7, 5, SUMMER_FACTOR)
 
-                with (cols := st.columns(2, gap='medium'))[0]:
-                        st.code(f'Sommer Faktor: {round(SUMMER_FACTOR, 2)}')
-                with cols[1]:
-                        st.code(f'Winter Faktor: {round(WINTER_FACTOR, 2)}')
+                    with (cols := st.columns(2, gap='medium'))[0]:
+                            st.code(f'Sommer Faktor: {round(SUMMER_FACTOR, 2)}')
+                    with cols[1]:
+                            st.code(f'Winter Faktor: {round(WINTER_FACTOR, 2)}')
+
+                    data_array = np.zeros(35040, dtype=float)
+                    data_array[:5664] = WINTER_FACTOR
+
+                    ramp = np.linspace(WINTER_FACTOR, SUMMER_FACTOR, 2976)
+                    data_array[5664:5664+2976] = ramp
+
+                    data_array[5664+2976:26_112] = SUMMER_FACTOR
+
+                    ramp = np.linspace(SUMMER_FACTOR, WINTER_FACTOR, 2976)
+                    data_array[26_112:26_112+2976] = ramp
+
+                    data_array[26_112+2976:] = WINTER_FACTOR
+
+                    date_range = pd.date_range(
+                            start='2030-01-01 00:00',
+                            end='2030-12-31 23:59',
+                            freq='15min',
+                        )
+
+                    skew_factor_df = pd.DataFrame({
+                        'date': date_range,
+                        'skew-factor': data_array
+                    })
+
+                    st.altair_chart(alt.Chart(skew_factor_df).mark_area().encode(
+                        x=alt.X(
+                            'date',
+                            axis=alt.Axis(title='Datum')
+                        ),
+                        y=alt.Y(
+                        'skew-factor',
+                        axis=alt.Axis(title='Skew Factor'),
+                        scale=alt.Scale(domain=[0.0, 2.0])
+                        ),
+                        color=alt.value('#6D5F6D')
+                    ).properties(
+                        height=300,
+                    ),
+                    use_container_width=True)
 
     def render_prototype_v0_2_snapshot_1_view(self):
         st.session_state.total_consumption_2030 = None
